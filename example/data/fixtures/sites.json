@@ -1,0 +1,18 @@
+[
+    {
+        "model": "sites.Site",
+        "pk": 1,
+        "fields": {
+            "domain": "multauth.sigent.com",
+            "name": "demo"
+        }
+    },
+    {
+        "model": "sites.Site",
+        "pk": 9,
+        "fields": {
+            "domain": "127.0.0.1:8000",
+            "name": "local"
+        }
+    }
+]

@@ -1,0 +1,20 @@
+django>=2.2.0, <3.0.0
+
+# auth
+hashids>=1.2.0
+phonenumbers>=8.0.0 # required by django-phonenumber-field only
+django-formtools>=2.1 # two-factor needs it "explicitly"
+django-phonenumber-field>=3.0.1
+django_otp>=0.4.3
+twilio>=6.10.2
+
+# api
+djangorestframework>=3.10.3, <4.0.0
+django-cors-headers==2.1.0 # TEMP ???
+django-extra-fields>=0.9
+drf-yasg>=1.16.1
+packaging # till drf-yasg fixed
+
+# misc
+django-localflavor>=1.6.2
+django-model-utils==3.0.0
