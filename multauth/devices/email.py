@@ -21,27 +21,8 @@ MULTAUTH_VERIFICATION_VIEWNAME = getattr(settings, 'MULTAUTH_EMAIL_VERIFICATION_
     'api:signup-verification-email-key')
 
 TEMPLATE_SUBJECT_SUFFIX = '_subject.txt'
-TEMPLATE_MESSAGE_SUFFIX = '_body.txt'
-TEMPLATE_MESSAGE_HTML_SUFFIX = '_body.html'
-
-
-try:
-    SUBJECT_TEMPLATE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX)
-except (TemplateDoesNotExist, TemplateSyntaxError):
-    if DEBUG: raise TemplateDoesNotExist('Template: {}'.format(MULTAUTH_TEMPLATE_NAME))
-    SUBJECT_TEMPLATE = None
-
-try:
-    MESSAGE_TEMPLATE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_HTML_SUFFIX)
-    MESSAGE_TEMPLATE_IS_HTML = True
-except (TemplateDoesNotExist, TemplateSyntaxError):
-    try:
-        MESSAGE_TEMPLATE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_SUFFIX)
-    except (TemplateDoesNotExist, TemplateSyntaxError):
-        if DEBUG: raise TemplateDoesNotExist('Template: {}'.format(MULTAUTH_TEMPLATE_NAME))
-        MESSAGE_TEMPLATE = None
-    finally:
-        MESSAGE_TEMPLATE_IS_HTML = False
+TEMPLATE_BODY_SUFFIX = '_body.txt'
+TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
 class EmailDevice(AbstractDevice):
@@ -79,15 +60,15 @@ class EmailDevice(AbstractDevice):
                 'token': token,
             }
 
-            subject = _(SUBJECT_TEMPLATE.render(context)) if SUBJECT_TEMPLATE else None
-            message = _(MESSAGE_TEMPLATE.render(context)) if MESSAGE_TEMPLATE else None
+            subject = self._render_subject(context)
+            body = self._render_body(context)
 
-            if message:
+            if body:
                 MailProvider(
                     to=self.email,
-                    subject=subject.strip(),
-                    message=message.strip(),
-                    is_html=MESSAGE_TEMPLATE_IS_HTML,
+                    subject=subject,
+                    message=body,
+                    is_html=TEMPLATE_BODY_IS_HTML,
                 ).send()
 
     @classmethod
@@ -100,3 +81,45 @@ class EmailDevice(AbstractDevice):
             device = None
 
         return device
+
+    def _render_subject(context):
+        if hasattr(self, '_template_subject'):
+            return _render_template(self._template_subject, context)
+
+        else:
+            try:
+                TEMPLATE_SUBJECT = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX)
+            except (TemplateDoesNotExist, TemplateSyntaxError):
+                if DEBUG: raise TemplateDoesNotExist('Template: {}' \
+                    .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX))
+                TEMPLATE_SUBJECT = None
+
+            self._template_subject = TEMPLATE_SUBJECT
+            return _render_template(self._template_subject, context)
+
+    def _render_body(context):
+        if hasattr(self, '_template_body'):
+            return _render_template(self._template_body, context)
+
+        else:
+            try:
+                TEMPLATE_BODY = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_HTML_SUFFIX)
+                TEMPLATE_BODY_IS_HTML = True
+            except (TemplateDoesNotExist, TemplateSyntaxError):
+                try:
+                    TEMPLATE_BODY = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX)
+                except (TemplateDoesNotExist, TemplateSyntaxError):
+                    if DEBUG: raise TemplateDoesNotExist('Template: {}' \
+                        .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX))
+                    TEMPLATE_BODY = None
+                finally:
+                    TEMPLATE_BODY_IS_HTML = False
+
+            self._template_body = TEMPLATE_BODY
+            return _render_template(self._template_body, context)
+
+    def  _render_template(template, context):
+        if template:
+            return _(TEMPLATE_BODY.render(context)).strip()
+        else:
+            return None

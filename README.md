@@ -9,7 +9,7 @@ Combined web and mobile authentication for Django. It's not multi-factor, it's o
 
 ### USAGE
 
-The package creates custom user model, that could be used as is or as inherited. General priniciples for custom user models in Django are respected ([how it works](https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#substituting-a-custom-user-model))
+The package creates custom user model, that could be used as is or as inherited. General priniciples for custom user models in Django are respected ([how it works](https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#substituting-a-custom-user-model)).
 
 Basic settings:
 ```

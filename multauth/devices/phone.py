@@ -20,13 +20,6 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_PHONE_TEMPLATE_NAME', 'phon
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-try:
-    MESSAGE_TEMPLATE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_SUFFIX)
-except (TemplateDoesNotExist, TemplateSyntaxError):
-    if DEBUG: raise TemplateDoesNotExist('Template: {}'.format(MULTAUTH_TEMPLATE_NAME))
-    MESSAGE_TEMPLATE = None
-
-
 class PhoneDevice(AbstractDevice):
     """
     Model with phone number and token seed linked to a user.
@@ -55,10 +48,30 @@ class PhoneDevice(AbstractDevice):
                 'token': token,
             }
 
-            message = _(MESSAGE_TEMPLATE.render(context)) if MESSAGE_TEMPLATE else None
+            message = _render_message(context)
 
             if message:
                 PhoneProvider(
                     to=self.phone.as_e164,
                     message=message,
                 ).send()
+
+    def _render_message(context):
+        if hasattr(self, '_template_message'):
+            return _render_template(self._template_message, context)
+
+        else:
+            try:
+                TEMPLATE_MESSAGE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_SUFFIX)
+            except (TemplateDoesNotExist, TemplateSyntaxError):
+                if DEBUG: raise TemplateDoesNotExist('Template: {}'.format(MULTAUTH_TEMPLATE_NAME))
+                TEMPLATE_MESSAGE = None
+
+            self._template_message = TEMPLATE_MESSAGE
+            return _render_template(self._template_message, context)
+
+    def  _render_template(template, context):
+        if template:
+            return _(TEMPLATE_BODY.render(context)).strip()
+        else:
+            return None

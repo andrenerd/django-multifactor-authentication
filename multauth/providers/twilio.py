@@ -7,11 +7,11 @@ from .abstract import AbstractProvider
 
 
 twilio = Client(
-    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID'),
-    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN')
+    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID', None),
+    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN', None)
 )
 
-twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID')
+twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID', None)
 
 
 class TwilioProvider(AbstractProvider):
