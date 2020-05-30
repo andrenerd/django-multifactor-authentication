@@ -10,7 +10,7 @@ def read(f):
 
 setup(
     name='django-multiform-authentication',
-    version='0.2',
+    version='0.3.0',
     url='http://multauth.sigent.com',
     license='BSD',
     description='Combined web and mobile authentication for Django.',
@@ -19,8 +19,23 @@ setup(
     author='Andrei Vasin',
     packages=find_packages(exclude=['tests', 'example']),
     include_package_data=True,
-    install_requires=["django>=2.2"],
-    python_requires=">=3.5",
+    install_requires=[
+        'django>=2.2',
+        'hashids>=1.2.0',
+        'phonenumbers>=8.0.0', # required by django-phonenumber-field only
+        'django-formtools>=2.1', # two-factor needs it "explicitly"
+        'django-phonenumber-field>=3.0.1',
+        'django_otp>=0.4.3',
+        'twilio>=6.10.2', # remove, make it optional
+        'djangorestframework>=3.10.3, <4.0.0',
+        'django-cors-headers==2.1.0', # temp ???
+        'django-extra-fields>=0.9', # what ???
+        'drf-yasg>=1.16.1', # what ???
+        'packaging', # till drf-yasg fixed
+        'django-localflavor>=1.6.2', # what ???
+        'django-model-utils==3.0.0', # what ???
+    ],
+    python_requires='>=3.5',
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',

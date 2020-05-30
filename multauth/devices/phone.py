@@ -56,22 +56,22 @@ class PhoneDevice(AbstractDevice):
                     message=message,
                 ).send()
 
-    def _render_message(context):
+    def _render_message(self, context):
         if hasattr(self, '_template_message'):
-            return _render_template(self._template_message, context)
+            return self._render_template(self._template_message, context)
 
         else:
             try:
-                TEMPLATE_MESSAGE = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_SUFFIX)
+                TEMPLATE_MESSAGE = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_MESSAGE_SUFFIX)
             except (TemplateDoesNotExist, TemplateSyntaxError):
                 if DEBUG: raise TemplateDoesNotExist('Template: {}'.format(MULTAUTH_TEMPLATE_NAME))
                 TEMPLATE_MESSAGE = None
 
             self._template_message = TEMPLATE_MESSAGE
-            return _render_template(self._template_message, context)
+            return self._render_template(self._template_message, context)
 
-    def  _render_template(template, context):
+    def  _render_template(self, template, context):
         if template:
-            return _(TEMPLATE_BODY.render(context)).strip()
+            return _(template.render(context)).strip()
         else:
             return None

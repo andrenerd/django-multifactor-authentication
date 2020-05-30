@@ -146,7 +146,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
                     user=self,
                     name='default', # temporal
                     phone=self.phone,
-                    key=random_hex(20).decode('ascii'),
+                    key=random_hex(20), # OBSOLETED: .decode('ascii'),
                     confirmed=False,
                 )
 
@@ -173,7 +173,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
                     user=self,
                     name='default', # temporal
                     email=self.email,
-                    key=random_hex(20).decode('ascii'),
+                    key=random_hex(20), # OBSOLETED: .decode('ascii'),
                     confirmed=False,
                 )
 

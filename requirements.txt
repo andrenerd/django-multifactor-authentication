@@ -5,7 +5,7 @@ hashids>=1.2.0
 phonenumbers>=8.0.0 # required by django-phonenumber-field only
 django-formtools>=2.1 # two-factor needs it "explicitly"
 django-phonenumber-field>=3.0.1
-django_otp>=0.4.3
+django_otp>=0.9.1
 twilio>=6.10.2
 
 # api

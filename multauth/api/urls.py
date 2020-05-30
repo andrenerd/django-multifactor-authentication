@@ -6,7 +6,9 @@ from .auth import views as auth_views
 from .views import IndexView
 from .schema import ShemaView
 
-app_name = 'api'
+
+app_name = 'multauth'
+
 urlpatterns = [
     # path('', IndexView.as_view()), # swagger doesn't get it :/
 

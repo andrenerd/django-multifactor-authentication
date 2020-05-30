@@ -1,6 +1,7 @@
 from django.db import models
 from django.core import signing
 from django.urls import reverse
+# RESERVED # from django.urls.exceptions import NoReverseMatch
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -18,7 +19,7 @@ DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_EMAIL_TEMPLATE_NAME', 'email')
 MULTAUTH_VERIFICATION_VIEWNAME = getattr(settings, 'MULTAUTH_EMAIL_VERIFICATION_VIEWNAME',
-    'api:signup-verification-email-key')
+    'multauth:signup-verification-email-key')
 
 TEMPLATE_SUBJECT_SUFFIX = '_subject.txt'
 TEMPLATE_BODY_SUFFIX = '_body.txt'
@@ -68,7 +69,7 @@ class EmailDevice(AbstractDevice):
                     to=self.email,
                     subject=subject,
                     message=body,
-                    is_html=TEMPLATE_BODY_IS_HTML,
+                    is_html=self._template_body_is_html,
                 ).send()
 
     @classmethod
@@ -82,32 +83,32 @@ class EmailDevice(AbstractDevice):
 
         return device
 
-    def _render_subject(context):
+    def _render_subject(self, context):
         if hasattr(self, '_template_subject'):
-            return _render_template(self._template_subject, context)
+            return self._render_template(self._template_subject, context)
 
         else:
             try:
-                TEMPLATE_SUBJECT = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX)
+                TEMPLATE_SUBJECT = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX)
             except (TemplateDoesNotExist, TemplateSyntaxError):
                 if DEBUG: raise TemplateDoesNotExist('Template: {}' \
                     .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX))
                 TEMPLATE_SUBJECT = None
 
             self._template_subject = TEMPLATE_SUBJECT
-            return _render_template(self._template_subject, context)
+            return self._render_template(self._template_subject, context)
 
-    def _render_body(context):
+    def _render_body(self, context):
         if hasattr(self, '_template_body'):
-            return _render_template(self._template_body, context)
+            return self._render_template(self._template_body, context)
 
         else:
             try:
-                TEMPLATE_BODY = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_HTML_SUFFIX)
+                TEMPLATE_BODY = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_HTML_SUFFIX)
                 TEMPLATE_BODY_IS_HTML = True
             except (TemplateDoesNotExist, TemplateSyntaxError):
                 try:
-                    TEMPLATE_BODY = get_template(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX)
+                    TEMPLATE_BODY = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX)
                 except (TemplateDoesNotExist, TemplateSyntaxError):
                     if DEBUG: raise TemplateDoesNotExist('Template: {}' \
                         .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX))
@@ -116,10 +117,11 @@ class EmailDevice(AbstractDevice):
                     TEMPLATE_BODY_IS_HTML = False
 
             self._template_body = TEMPLATE_BODY
-            return _render_template(self._template_body, context)
+            self._template_body_is_html = TEMPLATE_BODY_IS_HTML
+            return self._render_template(self._template_body, context)
 
-    def  _render_template(template, context):
+    def  _render_template(self, template, context):
         if template:
-            return _(TEMPLATE_BODY.render(context)).strip()
+            return _(template.render(context)).strip()
         else:
             return None
