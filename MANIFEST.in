@@ -1,0 +1,6 @@
+include README.md
+include LICENSE.md
+recursive-include multauth/templates *.html *.txt
+global-exclude __pycache__
+global-exclude *.py[co]
+exclude example

@@ -9,17 +9,24 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from .abstract import AbstractDevice, TOKEN_EXPIRY
-from ..providers import MailProvider
 
 
-MailProvider = getattr(settings, 'MULTAUTH_EMAIL_PROVIDER', MailProvider)
+try:
+    EmailProvider = settings.MULTAUTH_DEVICE_EMAIL_PROVIDER
+except AttributeError:
+    from ..providers.mail import MailProvider
+    EmailProvider = MailProvider
 
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_EMAIL_TEMPLATE_NAME', 'email')
-MULTAUTH_VERIFICATION_VIEWNAME = getattr(settings, 'MULTAUTH_EMAIL_VERIFICATION_VIEWNAME',
-    'multauth:signup-verification-email-key')
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 
+    'MULTAUTH_DEVICE_EMAIL_TEMPLATE_NAME', 'email'
+)
+MULTAUTH_VERIFICATION_VIEWNAME = getattr(settings,
+    'MULTAUTH_DEVICE_EMAIL_VERIFICATION_VIEWNAME',
+    'multauth:signup-verification-email-key'
+)
 
 TEMPLATE_SUBJECT_SUFFIX = '_subject.txt'
 TEMPLATE_BODY_SUFFIX = '_body.txt'
@@ -31,6 +38,8 @@ class EmailDevice(AbstractDevice):
     Model with email address and token seed linked to a user.
     """
     email = models.EmailField()
+
+    USER_MIXIN = 'devices.EmailUserMixin'
 
     def __eq__(self, other):
         if not isinstance(other, EmailDevice):
@@ -65,7 +74,7 @@ class EmailDevice(AbstractDevice):
             body = self._render_body(context)
 
             if body:
-                MailProvider(
+                EmailProvider(
                     to=self.email,
                     subject=subject,
                     message=body,
@@ -89,7 +98,11 @@ class EmailDevice(AbstractDevice):
 
         else:
             try:
-                TEMPLATE_SUBJECT = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX)
+                TEMPLATE_SUBJECT = get_template('multauth/'
+                    + MULTAUTH_TEMPLATE_NAME
+                    + TEMPLATE_SUBJECT_SUFFIX
+                )
+
             except (TemplateDoesNotExist, TemplateSyntaxError):
                 if DEBUG: raise TemplateDoesNotExist('Template: {}' \
                     .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_SUBJECT_SUFFIX))
@@ -104,15 +117,24 @@ class EmailDevice(AbstractDevice):
 
         else:
             try:
-                TEMPLATE_BODY = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_HTML_SUFFIX)
+                TEMPLATE_BODY = get_template('multauth/'
+                    + MULTAUTH_TEMPLATE_NAME
+                    + TEMPLATE_BODY_HTML_SUFFIX
+                )
                 TEMPLATE_BODY_IS_HTML = True
+
             except (TemplateDoesNotExist, TemplateSyntaxError):
                 try:
-                    TEMPLATE_BODY = get_template('multauth/' + MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX)
+                    TEMPLATE_BODY = get_template('multauth/'
+                        + MULTAUTH_TEMPLATE_NAME
+                        + TEMPLATE_BODY_SUFFIX
+                    )
+
                 except (TemplateDoesNotExist, TemplateSyntaxError):
                     if DEBUG: raise TemplateDoesNotExist('Template: {}' \
                         .format(MULTAUTH_TEMPLATE_NAME + TEMPLATE_BODY_SUFFIX))
                     TEMPLATE_BODY = None
+
                 finally:
                     TEMPLATE_BODY_IS_HTML = False
 
@@ -125,3 +147,98 @@ class EmailDevice(AbstractDevice):
             return _(template.render(context)).strip()
         else:
             return None
+
+
+class EmailUserMixin():
+    email = models.EmailField(_('Email address'), blank=True, null=True, unique=True,
+        #help_text = _('Required.'),
+        error_messages = {
+            'unique': _('A user with that email address already exists.'),
+        }
+    )
+
+    # password
+
+    is_email_verified = models.BooleanField(_('Email verified'), default=False,
+        help_text=_('Designates whether this user email is verified.'),
+    )
+
+    EMAIL_FIELD = 'email'
+
+    def get_email_device(self):
+        email = getattr(self, 'email', None)
+
+        try:
+            device = EmailDevice.objects.get(user=self, email=email)
+        except EmailDevice.DoesNotExist:
+            device = None
+
+        return device
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        device = self.get_email_device()
+        device.send(
+            to=self.email,
+            subject=subject,
+            message=message,
+            **kwargs,
+        )
+
+    def verify_email(self, request=None):
+        if getattr(self, 'email', None):
+            device = self.get_email_device()
+
+            if not device:
+                device = EmailDevice(
+                    user=self,
+                    name='default', # temporal
+                    email=self.email,
+                    key=random_hex(20), # OBSOLETED: .decode('ascii'),
+                    confirmed=False,
+                )
+
+                device.save()
+
+            device.generate_challenge(request)
+            return device
+
+    def verify_email_token(self, token):
+        if getattr(self, 'email', None):
+            device = self.get_email_device()
+
+            if not device:
+                return False
+
+            return device.verify_token(token) if token else False
+
+    # RESERVED
+    # @classmethod
+    # def verify_email_token(cls, email, token):
+    #     try:
+    #         device = EmailDevice.objects.get(email=email)
+    #     except:
+    #         return None
+
+    #     return device.user if device.verify_token(token) else None
+
+    @classmethod
+    def verify_email_key(cls, key):
+        device = EmailDevice.verify_key(key)
+        return device.user if device else None
+
+    # TODO: think to decale it here nicely
+    # def set_unusable_password(self):
+    #     # Set a value that will never be a valid hash
+    #     self.password = make_password(None)
+
+    # TODO: think to decale it here nicely
+    # def has_usable_password(self):
+    #     """
+    #     Return False if set_unusable_password() has been called for this user.
+    #     """
+    #     return is_password_usable(self.password)
+
+    def verify(self, request=None):
+        """ Symlink """
+        if self.email and not self.is_email_verified:
+            self.verify_email(request)

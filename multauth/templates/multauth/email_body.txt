@@ -1,0 +1,15 @@
+{% load i18n %}
+{% autoescape off %}
+Hello,
+
+You're receiving this e-mail because user {{ full_name }} has given yours as an email address to connect their account.
+
+To confirm this is correct, follow the link:
+{{ url }}
+
+or use token for the confirmation form:
+{{ token }}
+
+
+Best
+{% endautoescape %}

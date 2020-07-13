@@ -1,7 +1,23 @@
-from decorators import (
+from django.conf import settings
+from .decorators import (
     is_authenticated,
     is_admin,
     # is_custom_user, # EXAMPLE
+)
+
+
+MULTAUTH_DEVICES = getattr(settings, 'MULTAUTH_DEVICES', {})
+
+devices_mixin = lambda devices: tuple([d.USER_MIXIN for d in devices]) # don't touch
+
+def devices_mixin_verify(self, request=None):
+  for base in DevicesMixin.__bases__:
+    base.verify(self, request)
+
+DevicesMixin = type(
+    'DevicesMixin',
+    devices_mixin(list(MULTAUTH_DEVICES.values())),
+    {'verify': devices_mixin_verify}
 )
 
 
