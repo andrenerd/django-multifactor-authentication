@@ -14,10 +14,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 # from .devices import PhoneDevice, EmailDevice
 from .managers import UserManager
-from .mixins import DevicesMixin
+from .mixins import UserDevicesMixin
 
 
-class AbstractUser(AbstractBaseUser, DevicesMixin, PermissionsMixin):
+class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
     username_validator = UnicodeUsernameValidator()
 
@@ -55,12 +55,15 @@ class AbstractUser(AbstractBaseUser, DevicesMixin, PermissionsMixin):
         verbose_name_plural = _('users')
 
     def __str__(self):
-        # TODO / TEMP: replace / move to mixins.py
-        return '%s (%s)' % (self.get_full_name(), getattr(self, 'phone', '') or getattr(self, 'email', ''))
+        return '{0} ({1})'.format(
+            self.get_full_name() or 'Noname',
+            ', '.join(self.get_devices_names()) or '-', # experimental
+        ).strip()
 
     def clean(self):
         super().clean()
 
+        # TODO / TEMP: replace / move to mixins.py
         phone = getattr(self, 'phone', None)
         email = getattr(self, 'email', None)
 
@@ -86,14 +89,9 @@ class AbstractUser(AbstractBaseUser, DevicesMixin, PermissionsMixin):
         return str(getattr(self, self.USERNAME_FIELD))
 
     def get_full_name(self):
-        """
-        Return the first_name plus the last_name, with a space in between.
-        """
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
+        return '{0} {1}'.format(self.first_name or '', self.last_name or '').strip()
 
     def get_short_name(self):
-        """Return the short name for the user."""
         return self.first_name
 
     # OBSOLETED: refactored. see DevicesMixin

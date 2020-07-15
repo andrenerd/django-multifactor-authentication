@@ -16,7 +16,7 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_CHIP_TEMPLATE_NAME', 'phone')
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_CHIP_TEMPLATE_NAME', 'chip')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
@@ -25,18 +25,20 @@ class ChipDevice(AbstractDevice):
     """
     Model with microchip number and token seed linked to a user.
     """
-    phone = ChipNumberField()
+    chip = ChipNumberField()
     pushcode = models.CharField(_('Pushcode'), max_length=256, blank=True, null=True, unique=True, editable=False)
+
+    USER_MIXIN = 'ChipUserMixin'
 
     def __eq__(self, other):
         if not isinstance(other, ChipDevice):
             return False
 
-        return self.phone == other.phone \
+        return self.chip == other.chip \
             and self.key == other.key
 
     def __hash__(self):
-        return hash((self.phone,))
+        return hash((self.chip,))
 
     def generate_challenge(self, request=None):
         token = self.get_token()
@@ -50,3 +52,6 @@ class ChipDevice(AbstractDevice):
             }
 
             pass
+
+
+# TODO: add mixin

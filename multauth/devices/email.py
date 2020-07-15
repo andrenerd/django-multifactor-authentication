@@ -39,7 +39,7 @@ class EmailDevice(AbstractDevice):
     """
     email = models.EmailField()
 
-    USER_MIXIN = 'devices.EmailUserMixin'
+    USER_MIXIN = 'EmailUserMixin'
 
     def __eq__(self, other):
         if not isinstance(other, EmailDevice):
@@ -149,7 +149,8 @@ class EmailDevice(AbstractDevice):
             return None
 
 
-class EmailUserMixin():
+class EmailUserMixin(models.Model):
+
     email = models.EmailField(_('Email address'), blank=True, null=True, unique=True,
         #help_text = _('Required.'),
         error_messages = {
@@ -165,8 +166,14 @@ class EmailUserMixin():
 
     EMAIL_FIELD = 'email'
 
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return str(getattr(self, 'email'))
+
     def get_email_device(self):
-        email = getattr(self, 'email', None)
+        email = getattr(self, 'email', '')
 
         try:
             device = EmailDevice.objects.get(user=self, email=email)

@@ -1,4 +1,9 @@
+from importlib import import_module
+
 from django.conf import settings
+from django.db import models
+
+from .devices import EmailDevice, PhoneDevice
 from .decorators import (
     is_authenticated,
     is_admin,
@@ -6,18 +11,34 @@ from .decorators import (
 )
 
 
-MULTAUTH_DEVICES = getattr(settings, 'MULTAUTH_DEVICES', {})
+MULTAUTH_DEVICES = list(getattr(settings, 'MULTAUTH_DEVICES', [
+    EmailDevice,
+    PhoneDevice,
+]));
 
-devices_mixin = lambda devices: tuple([d.USER_MIXIN for d in devices]) # don't touch
+
+mixin_classes = tuple([
+    getattr(import_module(d.__module__), d.USER_MIXIN) for d in MULTAUTH_DEVICES
+])
+
 
 def devices_mixin_verify(self, request=None):
-  for base in DevicesMixin.__bases__:
-    base.verify(self, request)
+    for base in UserDevicesMixin.__bases__:
+        base.verify(self, request)
 
-DevicesMixin = type(
-    'DevicesMixin',
-    devices_mixin(list(MULTAUTH_DEVICES.values())),
-    {'verify': devices_mixin_verify}
+
+def get_devices_names(self):
+    return [base.__str__(self) for base in UserDevicesMixin.__bases__]
+
+
+UserDevicesMixin = type(
+    'UserDevicesMixin',
+    mixin_classes,
+    {
+        '__module__': 'multauth',
+        'verify': devices_mixin_verify,
+        'get_devices_names': get_devices_names # experimental
+    }
 )
 
 

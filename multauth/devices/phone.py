@@ -30,7 +30,7 @@ class PhoneDevice(AbstractDevice):
     phone = PhoneNumberField()
     pushcode = models.CharField(_('Pushcode'), max_length=256, blank=True, null=True, unique=True, editable=False)
 
-    USER_MIXIN = 'devices.PhoneUserMixin'
+    USER_MIXIN = 'PhoneUserMixin'
 
     def __eq__(self, other):
         if not isinstance(other, PhoneDevice):
@@ -82,7 +82,7 @@ class PhoneDevice(AbstractDevice):
             return None
 
 
-class PhoneUserMixin():
+class PhoneUserMixin(models.Model):
 
     phone = PhoneNumberField(_('Phone number'), blank=True, null=True, unique=True,
         #help_text = _('Required.'),
@@ -96,6 +96,12 @@ class PhoneUserMixin():
     is_phone_verified = models.BooleanField(_('Phone verified'), default=False,
         help_text=_('Designates whether this user phone is verified.'),
     )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return str(getattr(self, 'phone', ''))
 
     def get_phone_device(self):
         phone = getattr(self, 'phone', None)

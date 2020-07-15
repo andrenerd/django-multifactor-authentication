@@ -102,7 +102,7 @@ is that it's handaled by rest api too, not function calls only.
 
 
 ##### More
-Let us know, what other authentication flows would be nice to add.
+Let us know what other authentication flows would be nice to add.
 For example, you decide to add `microchip implants` based authentication. There are several simple steps to take:
 - to add Device (as example)[link?]
 - to add at least one Provider associated with the Device (as example)[link?]
@@ -110,13 +110,12 @@ For example, you decide to add `microchip implants` based authentication. There 
 - to extend api with new endpoints [see]
 - tweak settings to activate the flow:
 ```
-MULTAUTH_DEVICES = {
-  'email': EmailDevice,
-  'phone': PhoneDevice,
-  'chip': ChipDevice, # long-awaited microchip implants ;)
-}
+MULTAUTH_DEVICES = [
+  PhoneDevice,
+  ChipDevice, # long-awaited microchip implants ;)
+]
 
-AUTH_USER_MODEL = 'app.ChipPhoneEmailUser'
+AUTH_USER_MODEL = 'app.ChipPhoneUser'
 ```
 
 
