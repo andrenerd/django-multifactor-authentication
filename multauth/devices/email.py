@@ -8,6 +8,8 @@ from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from django_otp.util import random_hex
+
 from .abstract import AbstractDevice, TOKEN_EXPIRY
 
 
@@ -59,6 +61,7 @@ class EmailDevice(AbstractDevice):
         if MULTAUTH_DEBUG:
             print('Fake auth message, email: %s, token: %s ' % (self.email, token))
 
+        # TODO: think to replace: "request.scheme or 'http"
         else:
             context = {
                 'full_name': self.user.get_full_name(),

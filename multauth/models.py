@@ -12,7 +12,6 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django_otp.util import random_hex
 from phonenumber_field.modelfields import PhoneNumberField
 
-# from .devices import PhoneDevice, EmailDevice
 from .managers import UserManager
 from .mixins import UserDevicesMixin
 

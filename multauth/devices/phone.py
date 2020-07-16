@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from phonenumber_field.modelfields import PhoneNumberField
+from django_otp.util import random_hex
 
 from .abstract import AbstractDevice
 
@@ -80,7 +81,7 @@ class PhoneDevice(AbstractDevice):
             return _(template.render(context)).strip()
         else:
             return None
-
+print('!!!!!!PhoneUserMixin')
 
 class PhoneUserMixin(models.Model):
 

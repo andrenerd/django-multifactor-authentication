@@ -36,6 +36,7 @@ UserDevicesMixin = type(
     mixin_classes,
     {
         '__module__': 'multauth',
+        'Meta': type('Meta', (object,), {'abstract': True}),
         'verify': devices_mixin_verify,
         'get_devices_names': get_devices_names # experimental
     }
