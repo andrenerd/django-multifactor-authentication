@@ -88,17 +88,19 @@ MULTAUTH_PROVIDER_TWILIO_CALLER_ID = 'CALLER_ID'
 ##### Email
 This authentication flow is pretty the same as provided by Django by default. Extra feature
 is that it's handaled by rest api too, not function calls only.
-- User provides email as identifier (email address), [url, func]
-- User confirms the identifier [url, func]
-- Able to signin using the authentication pair: email/password
+- User provides `email` as identifier (email address), [url]
+- User confirms the identifier (`email`) [url, func]
+- Able to signin using the credentials: `email`/`password`
 - ...add more
 
 
 ##### Phone
-- User provides phone as identifier (phone number), via api
-- User confirms the identifier (email address), via api
-- User provides email identificator (email address), via api
+- User provides `phone` as identifier (phone number), [url]
+- User confirms the identifier (`phone`) [url, func]
+- Able to signin using the credentials: `phone`/`secret`*** [url]
 - ...add more
+
+*** `passcode` (set by user explicitly) or `token` (set by app automatically) supposed to be used as secret
 
 
 ##### More

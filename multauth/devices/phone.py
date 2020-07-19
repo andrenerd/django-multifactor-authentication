@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
@@ -54,7 +55,7 @@ class PhoneDevice(AbstractDevice):
                 'token': token,
             }
 
-            message = _render_message(context)
+            message = self._render_message(context)
 
             if message:
                 PhoneProvider(
@@ -81,7 +82,7 @@ class PhoneDevice(AbstractDevice):
             return _(template.render(context)).strip()
         else:
             return None
-print('!!!!!!PhoneUserMixin')
+
 
 class PhoneUserMixin(models.Model):
 
@@ -97,6 +98,10 @@ class PhoneUserMixin(models.Model):
     is_phone_verified = models.BooleanField(_('Phone verified'), default=False,
         help_text=_('Designates whether this user phone is verified.'),
     )
+
+    IDENTIFIER_FIELD = 'phone'
+    SECRET_FIELD = 'passcode'
+    SECRET_FIELD_REQUIRED = False # override with User.PHONE_SECRET_FIELD_REQUIRED
 
     class Meta:
         abstract = True

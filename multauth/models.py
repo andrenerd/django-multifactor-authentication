@@ -16,6 +16,7 @@ from .managers import UserManager
 from .mixins import UserDevicesMixin
 
 
+# should it be renamed to MultauthAbstractUser?
 class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
     username_validator = UnicodeUsernameValidator()
@@ -45,7 +46,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'username' # TODO: replace, should be based on UseDevicesMixin (phone, email, username)
     REQUIRED_FIELDS = [] # TODO: fill with identifiers and more
 
     class Meta:
@@ -56,8 +57,18 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     def __str__(self):
         return '{0} ({1})'.format(
             self.get_full_name() or 'Noname',
-            ', '.join(self.get_devices_names()) or '-', # experimental
+            ', '.join(self[i] for i in self._identifiers if getattr(self, i)) or '-', # experimental
         ).strip()
+
+    # experimental
+    @classmethod
+    def get_required_credentials(cls):
+        attr = lambda x: '_'.join((x.upper(), 'SECRET_FIELD_REQUIRED'))
+
+        return tuple(map(
+            lambda i, x: x if getattr(cls, attr(cls._devices[i]), False) else (x[0],), # drop non required secrets
+            range(cls._credentials.__len__()), cls._credentials,
+        ))
 
     def clean(self):
         super().clean()
@@ -93,6 +104,13 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     def get_short_name(self):
         return self.first_name
 
+    # OBSOLETED
+    # def get_devices(self):
+    #     cls = type(self)
+    #     UserDevicesMixin = [c for c in cls.__mro__ if c.__name__ == 'UserDevicesMixin'][0]
+    #     devices_mixins = [c for c in UserDevicesMixin.__bases__]
+    #     return devices_mixins
+
     # OBSOLETED: refactored. see DevicesMixin
     # def verify(self, request=None):
     #     if self.phone and not self.is_phone_verified:
@@ -102,6 +120,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     #         self.verify_email(request)
 
 
+# should it be renamed to MultauthUser?
 class User(AbstractUser):
 
     class Meta(AbstractUser.Meta):

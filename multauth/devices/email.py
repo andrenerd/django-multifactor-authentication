@@ -2,6 +2,7 @@ from django.db import models
 from django.core import signing
 from django.urls import reverse
 # RESERVED # from django.urls.exceptions import NoReverseMatch
+from django.contrib.auth.hashers import make_password
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -161,11 +162,15 @@ class EmailUserMixin(models.Model):
         }
     )
 
-    # password
+    # password # see built-in AbsctractUser model
 
     is_email_verified = models.BooleanField(_('Email verified'), default=False,
         help_text=_('Designates whether this user email is verified.'),
     )
+
+    IDENTIFIER_FIELD = 'email'
+    SECRET_FIELD = 'password'
+    SECRET_FIELD_REQUIRED = True # override with User.EMAIL_SECRET_FIELD_REQUIRED
 
     EMAIL_FIELD = 'email'
 

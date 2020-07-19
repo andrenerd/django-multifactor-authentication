@@ -1,3 +1,6 @@
+# TODO: reconstruct the whole module.
+# TODO: should be split/customized based on Devices or something
+
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
