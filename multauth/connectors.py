@@ -24,8 +24,8 @@ from django.apps import apps
 @receiver(m2m_changed)
 def create_profiles(sender, instance, model, pk_set, action, **kwargs):
     """
-    Create profiles (BankUser, CustomUser, ...)
-    for user added to related groups
+    Create custom profiles (CustomUser, ...)
+    for users added to related groups
     """
     if isinstance(instance, Group) and issubclass(model, get_user_model()):
         if action in ['post_add',]:

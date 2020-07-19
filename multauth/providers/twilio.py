@@ -4,12 +4,18 @@ from twilio.rest import Client
 from .abstract import AbstractProvider
 
 
-twilio = Client(
-    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID', None),
-    getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN', None)
-)
-
+TWILIO_ACCOUNT_SID = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID', None),
+TWILIO_AUTH_TOKEN = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN', None),
 twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID', None)
+
+
+# see
+# https://www.twilio.com/docs/libraries/python
+if TWILIO_ACCOUNT_SID:
+    twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+else:
+    print('Twilio: running in mock mode. Set "account sid" and orther params.')
+    twilio = None
 
 
 class TwilioProvider(AbstractProvider):
@@ -29,8 +35,11 @@ class TwilioProvider(AbstractProvider):
         if not self.to:
             return
 
-        twilio.messages.create(
-            to=self.to,
-            from_=twilio_from,
-            body=self.message,
-        )
+        if twilio:
+            twilio.messages.create(
+                to=self.to,
+                from_=twilio_from,
+                body=self.message,
+            )
+        else:
+            print('Twilio: to %s, message "%s"', (self.to, self.message))

@@ -31,6 +31,9 @@ class AbstractDevice(Device):
         app_label = 'multauth'
         abstract = True
 
+    def __str__(self):
+      raise NotImplementedError
+
     @property
     def bin_key(self):
         return unhexlify(self.key.encode())

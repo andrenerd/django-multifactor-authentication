@@ -1,6 +1,5 @@
 # RESERVED # from __future__ import absolute_import # for Celery
 
-
 # RESERVED
 # try:
 #     from .celery import app as celery_app
