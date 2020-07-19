@@ -16,15 +16,6 @@ and service providers:
 
 
 
-### Live
-Check running example, where you can send api request to and more:
-http://multauth.sigent.com/api/docs  
-http://multauth.sigent.com/api  
-http://multauth.sigent.com  
-
-
-
-
 
 ### Why
 
@@ -32,6 +23,7 @@ Built-in Django authentication facilities doesn't include some, nice to have, hi
 - rest api: basic user authentication and management operations
 - custom profiles: easily managed user data profiles linked to user groups
 - extendable: ...
+
 
 
 
