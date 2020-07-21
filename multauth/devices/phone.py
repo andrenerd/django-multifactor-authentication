@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
@@ -8,7 +8,7 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice
+from .abstract import AbstractDevice, AbstractUserMixin
 
 
 try:
@@ -43,6 +43,10 @@ class PhoneDevice(AbstractDevice):
 
     def __hash__(self):
         return hash((self.phone,))
+
+    def clean(self):
+        super().clean()
+        pass
 
     def generate_challenge(self, request=None):
         token = self.get_token()
@@ -84,7 +88,7 @@ class PhoneDevice(AbstractDevice):
             return None
 
 
-class PhoneUserMixin(models.Model):
+class PhoneUserMixin(AbstractUserMixin):
 
     phone = PhoneNumberField(_('Phone number'), blank=True, null=True, unique=True,
         #help_text = _('Required.'),
@@ -98,6 +102,11 @@ class PhoneUserMixin(models.Model):
     is_phone_verified = models.BooleanField(_('Phone verified'), default=False,
         help_text=_('Designates whether this user phone is verified.'),
     )
+
+    # TODO: make this field work
+    # Stores the raw passcode if set_passcode() is called so that it can
+    # be passed to passcode_changed() after the model is saved.
+    _passcode = None
 
     IDENTIFIER_FIELD = 'phone'
     SECRET_FIELD = 'passcode'
@@ -147,9 +156,27 @@ class PhoneUserMixin(models.Model):
             return device.verify_token(token) if token else False
 
     def verify(self, request=None):
-        """ Symlink """
+        super().verify(request)
+
         if self.phone and not self.is_phone_verified:
             self.verify_phone(request)
+
+    def set_secrets(self, **fields):
+        super().set_secrets(**fields)
+
+        if __class__.SECRET_FIELD in fields:
+            self.set_passcode(fields.get(__class__.SECRET_FIELD))
+
+    def check_secrets(self, **fields):
+        if __class__.IDENTIFIER_FIELD in fields:
+            if __class__.SECRET_FIELD in fields:
+                return (
+                        self.check_passcode(fields.get(__class__.SECRET_FIELD))
+                    and
+                        self.verify_phone_token(fields.get('token', None)) # refactor # TODO: is it needed?
+                )
+        else:
+            return super().check_secrets(**fields)
 
     def set_passcode(self, raw_passcode):
         self.passcode = make_password(raw_passcode)

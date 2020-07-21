@@ -57,3 +57,22 @@ class AbstractDevice(Device):
       raise NotImplementedError
 
 
+class AbstractUserMixin(models.Model):
+
+    IDENTIFIER_FIELD = None # required
+    SECRET_FIELD = None # semi-required
+
+    class Meta:
+        abstract = True
+
+    def clean(self):
+        pass
+
+    def verify(self, request=None):
+        pass
+
+    def set_secrets(self, **fields):
+        pass
+
+    def check_secrets(self, **fields):
+        pass

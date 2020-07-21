@@ -1,7 +1,7 @@
 # Django Multiform Authentication
 
 
-Combined web and mobile authentication for Django. It's not multi-factor, it's one-factor in multiple formats to build multi-purpose backends for web and mobile apps. Easily configurable and  extandable for new authentication methods or services. Supported credential pairs:  
+Combined web and mobile authentication for Django. It's not multi-factor, it's one-factor in multiple formats. Easily configurable and extendable with new authentication methods or services. Supported out-of-the-box methods by credential pairs:  
 - email / password
 - phone / passcode
 - ...add yours
@@ -16,24 +16,12 @@ and service providers:
 
 
 
-
-### Why
-
-Built-in Django authentication facilities doesn't include some, nice to have, higher level features for modern apps. Here is a brief list of them:
-- rest api: basic user authentication and management operations
-- custom profiles: easily managed user data profiles linked to user groups
-- extendable: ...
-
-
-
-
-
 ### Usage
 
 The package creates custom user model, that could be used as is or as inherited. General priniciples for custom user models in Django are respected ([how it works](https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#substituting-a-custom-user-model)).
 
 
-Basic settings (required):
+Base settings (required):
 ```
 AUTH_USER_MODEL = 'multauth.User'
 AUTHENTICATION_BACKENDS = (

@@ -6,52 +6,22 @@ UserModel = get_user_model()
 
 
 class UserBackend(ModelBackend):
-    """
-    Authenticates using multiple username fields (phone or email)
-    """
 
-    def authenticate(self, 
-        request, username=None,
-        phone=None, passcode=None,
-        email=None, password=None,
-        token=None, **kwargs
-    ):
-
-        # handle legacy scenarios
-        if UserModel.USERNAME_FIELD == 'phone':
-            phone = phone or username
-        else:
-            email = email or username
-
-        # get user by identifier
-        try:
-            if phone:
-                user = UserModel._default_manager.get(phone=phone)
-
-            if email:
-                user = UserModel._default_manager.get(email=email)
-
-        except UserModel.DoesNotExist:
-            # Run the default password hasher once to reduce the timing
-            # difference between an existing and a nonexistent user (#20760).
-            UserModel().set_password(password)
-
+    def authenticate(self, request, **kwargs):
         # experimental
-        # authenticate user by credentials
-        else:
-            if self.user_can_authenticate(user): # experimental
-                # email or phone + password
-                if password:
-                    if user.check_password(password):
-                        return user
+        for (identifier, secret) in UserModel._credentials:
+            if identifier in kwargs and secret in kwargs:
 
-                # phone + passcode + token
-                if passcode:
-                    if user.check_passcode(passcode):
-                        if phone and user.verify_phone_token(token):
+                try:
+                    identifier_args = {identifier: kwargs.get(identifier)}
+                    user = UserModel._default_manager.get(**identifier_args)
+
+                except UserModel.DoesNotExist:
+                    # Run the default password hasher once to reduce the timing
+                    # difference between an existing and a nonexistent user (#20760).
+                    UserModel().set_password(password)
+
+                else:
+                    if self.user_can_authenticate(user):
+                        if user.check_secrets(**kwargs):
                             return user
-
-                # email + token
-                if token:
-                    if email and user.verify_email_token(token):
-                        return user

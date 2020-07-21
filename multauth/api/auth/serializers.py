@@ -1,7 +1,7 @@
 # TODO: reconstruct the whole module.
 # TODO: should be split/customized based on Devices or something
 
-from functools import reduce
+# from functools import reduce
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
@@ -29,6 +29,7 @@ class SignupSerializer(serializers.ModelSerializer):
     """
     For write (POST...) requests only
     """
+    # TODO: replace with dynamic values
     password = serializers.CharField(required=False)
     passcode = serializers.CharField(required=False)
 
@@ -41,15 +42,11 @@ class SignupSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         model = self.Meta.model
-        required_credentials = model.get_required_credentials()
 
-        # at least one "pair" of credentials should be passed
-        if not [
-            credentials for credentials in required_credentials
-                if reduce(lambda b, x: data.get(x) and b, credentials, True)
-        ]:
-            msg = _('Must include ' + ' or '.join('"' + '/'.join(x) + '"' for x in required_credentials))
-            raise exceptions.ValidationError(msg)
+        try:
+            model.validate(**data) # experimental
+        except ValueError as e:
+            raise exceptions.ValidationError(str(e))
 
         return super().validate(data)
 
