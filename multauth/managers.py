@@ -1,47 +1,36 @@
-from django.contrib.auth.models import UserManager
+from django.contrib.auth.models import UserManager as _UserManager
 
 
-class UserManager(UserManager):
+class UserManager(_UserManager):
 
-    def _create_user(self,
-        phone=None, passcode=None,
-        email=None, password=None,
-        **extra_fields
-    ):
-        if not phone and not email:
-            raise ValueError('At least one of the identifiers (phone, email) must be set')
+    def _create_user(self, **fields):
+        self.model.validate(**fields) # validate values
+        user = self.model(**fields)
 
-        if email:
-            email = self.normalize_email(email)
-
-        user = self.model(phone=phone, email=email, **extra_fields)
-        user.create_username()
-
-        if passcode:
-            user.set_passcode(passcode)
-
-        if password:
-            user.set_password(password)
-
+        user.clean() # normalize values
+        user.set_secrets(**fields) # hash pass codes
         user.save(using=self._db)
 
         return user
 
-    def create_user(self, phone=None, passcode=None, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+    def create_user(self, **fields):
+        if hasattr(self.model, 'is_staff'):
+            fields.setdefault('is_staff', False)
 
-        return self._create_user(phone, passcode, email, password, **extra_fields)
+        if hasattr(self.model, 'is_superuser'):
+            fields.setdefault('is_superuser', False)
 
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        return self._create_user(**fields)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
+    def create_superuser(self, **fields):
+        if hasattr(self.model, 'is_staff'):
+            fields.setdefault('is_staff', True)
+            if fields.get('is_staff') is not True:
+                raise ValueError('Superuser must have is_staff=True.')
 
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if hasattr(self.model, 'is_superuser'):
+            fields.setdefault('is_superuser', True)
+            if fields.get('is_superuser') is not True:
+                raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(None, email, password, **extra_fields)
+        return self._create_user(**fields)

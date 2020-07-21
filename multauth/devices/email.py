@@ -2,7 +2,7 @@ from django.db import models
 from django.core import signing
 from django.urls import reverse
 # RESERVED # from django.urls.exceptions import NoReverseMatch
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -11,7 +11,7 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, TOKEN_EXPIRY
+from .abstract import AbstractDevice, AbstractUserMixin, TOKEN_EXPIRY
 
 
 try:
@@ -153,7 +153,7 @@ class EmailDevice(AbstractDevice):
             return None
 
 
-class EmailUserMixin(models.Model):
+class EmailUserMixin(AbstractUserMixin):
 
     email = models.EmailField(_('Email address'), blank=True, null=True, unique=True,
         #help_text = _('Required.'),
@@ -162,11 +162,15 @@ class EmailUserMixin(models.Model):
         }
     )
 
-    # password # see built-in AbsctractUser model
+    password = models.CharField(_('password'), max_length=128)
 
     is_email_verified = models.BooleanField(_('Email verified'), default=False,
         help_text=_('Designates whether this user email is verified.'),
     )
+
+    # Stores the raw password if set_password() is called so that it can
+    # be passed to password_changed() after the model is saved.
+    _password = None
 
     IDENTIFIER_FIELD = 'email'
     SECRET_FIELD = 'password'
@@ -179,6 +183,10 @@ class EmailUserMixin(models.Model):
 
     def __str__(self):
         return str(getattr(self, 'email'))
+
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
 
     def get_email_device(self):
         email = getattr(self, 'email', '')
@@ -241,12 +249,12 @@ class EmailUserMixin(models.Model):
         device = EmailDevice.verify_key(key)
         return device.user if device else None
 
-    # TODO: think to decale it here nicely
+    # TODO: try to declare it here nicely
     # def set_unusable_password(self):
     #     # Set a value that will never be a valid hash
     #     self.password = make_password(None)
 
-    # TODO: think to decale it here nicely
+    # TODO: try to declare it here nicely
     # def has_usable_password(self):
     #     """
     #     Return False if set_unusable_password() has been called for this user.
@@ -254,6 +262,30 @@ class EmailUserMixin(models.Model):
     #     return is_password_usable(self.password)
 
     def verify(self, request=None):
-        """ Symlink """
+        super().verify(request)
+
         if self.email and not self.is_email_verified:
             self.verify_email(request)
+
+    def set_secrets(self, **fields):
+        super().set_secrets(**fields)
+
+        if __class__.SECRET_FIELD in fields:
+            self.set_password(fields.get(__class__.SECRET_FIELD))
+
+    def check_secrets(self, **fields):
+        if __class__.IDENTIFIER_FIELD in fields:
+            if __class__.SECRET_FIELD in fields:
+                return self.check_password(fields.get(__class__.SECRET_FIELD))
+
+            # TODO: try to clarify later
+            # url-passed token (for email verification or so)
+            if 'token' in fields:
+                return self.verify_email_token(fields.get('token'))
+
+        else:
+            return super().check_secrets(**fields)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+        self._password = raw_password

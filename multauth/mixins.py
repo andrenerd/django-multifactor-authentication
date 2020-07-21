@@ -11,17 +11,20 @@ from .decorators import (
 )
 
 
-MULTAUTH_DEVICES = list(getattr(settings, 'MULTAUTH_DEVICES', [
+MULTAUTH_DEVICES = tuple(getattr(settings, 'MULTAUTH_DEVICES', [
     EmailDevice,
     PhoneDevice,
 ]));
+
+if not MULTAUTH_DEVICES:
+    raise ValidationError('At least one Device should be added (see MULTAUTH_DEVICES settings)')
 
 
 mixin_classes = tuple(
     getattr(import_module(d.__module__), d.USER_MIXIN) for d in MULTAUTH_DEVICES
 )
 
-mixin_modules = tuple(
+mixin_devices = tuple(
     c.__module__.split('.')[-1] for c in mixin_classes
 )
 
@@ -39,40 +42,28 @@ mixin_credentials = tuple(
 
 mixin_settings = dict([
     [
-        mixin_modules[i].upper() + '_SECRET_FIELD_REQUIRED',
+        mixin_devices[i].upper() + '_SECRET_FIELD_REQUIRED',
         getattr(x, 'SECRET_FIELD_REQUIRED', False),
     ] for (i, x) in enumerate(mixin_classes) # experimental
 ])
 
 
-# experimental # dirty
-def clean_mixin_classes(mixin_classes):
-    for x in mixin_classes:
-        delattr(x, 'IDENTIFIER_FIELD')
-        delattr(x, 'SECRET_FIELD')
-        delattr(x, 'SECRET_FIELD_REQUIRED')
-
-    return mixin_classes
-
-
-def devices_mixin_verify(self, request=None):
-    for base in UserDevicesMixin.__bases__:
-        base.verify(self, request)
-
-
 UserDevicesMixin = type(
     'UserDevicesMixin',
-    clean_mixin_classes(mixin_classes),
+    mixin_classes,
     {
         '__module__': 'multauth',
         'Meta': type('Meta', (object,), {'abstract': True}),
 
-        '_devices': mixin_modules,
+        'USERNAME_FIELD': mixin_identifiers[0], # experimental
+        'DENTIFIER_FIELD': mixin_identifiers, # experimental # just to override mixed value
+        'SECRET_FIELD': mixin_secrets, # experimental # just to override mixed value
+        'SECRET_FIELD_REQUIRED': None, # experimental # just to override mixed value
+
+        '_devices': mixin_devices,
         '_identifiers': mixin_identifiers,
         '_secrets': mixin_secrets, # experimental
         '_credentials': mixin_credentials, # experimental
-
-        'verify': devices_mixin_verify,
 
         **mixin_settings,
     }

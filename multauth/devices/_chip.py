@@ -4,7 +4,7 @@ from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from .abstract import AbstractDevice
+from .abstract import AbstractDevice, AbstractUserMixin
 
 
 try:
