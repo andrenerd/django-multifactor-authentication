@@ -2,6 +2,7 @@ from importlib import import_module
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from .devices import EmailDevice, PhoneDevice
 from .decorators import (
@@ -17,7 +18,8 @@ MULTAUTH_DEVICES = tuple(getattr(settings, 'MULTAUTH_DEVICES', [
 ]));
 
 if not MULTAUTH_DEVICES:
-    raise ValidationError('At least one Device should be added (see MULTAUTH_DEVICES settings)')
+    msg = _('At least one Device should be added (see MULTAUTH_DEVICES settings)')
+    raise ValidationError(msg)
 
 
 mixin_classes = tuple(

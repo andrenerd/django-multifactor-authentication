@@ -6,54 +6,53 @@ from rest_framework import exceptions, serializers
 
 
 __all__ = (
-    'SigninSerializer',
-    'SignupSerializer',
-    'SignupVerificationSerializer',
-    'SignupVerificationUserSerializer',
-    # 'ResetSerializer', 'ResetEmailSerializer',
-
-    'TokenSerializer',
+    'SignupVerificationPhoneSerializer',
+    'SignupVerificationEmailSerializer',
 )
 
 
-class TokenSerializer(serializers.Serializer):
-    token = serializers.CharField(read_only=True)
-    # RESERVED # expired_datetime = serializers.DateTimeField(read_only=True) # could be timestamp
-
-
-class SignupSerializer(serializers.ModelSerializer):
-    """
-    For write (POST...) requests only
-    """
-    # TODO: replace with dynamic values
-    password = serializers.CharField(required=False)
-    passcode = serializers.CharField(required=False)
-
-    class Meta:
-        model = get_user_model()
-        fields = (
-            'phone', 'email', 'password', 'passcode', # TODO: replace with dynamic values
-            'first_name', 'last_name',
-        )
+class SignupVerificationEmailSerializer(serializers.Serializer):
+    token = serializers.CharField() # aka one-time-passcode
 
     def validate(self, data):
-        model = self.Meta.model
+        request = self.context.get('request')
+        user = request.user
 
-        try:
-            model.validate(**data) # experimental
-        except ValueError as e:
-            raise exceptions.ValidationError(str(e))
+        if user.verify_email_token(data.get('token')):
+            user.is_email_verified = True
+            user.is_active = True
+            user.save()
+
+        else:
+            msg = _('Confirmation code is invalid or expired')
+            raise serializers.ValidationError(msg)
 
         return super().validate(data)
 
 
-class SignupVerificationSerializer(serializers.ModelSerializer):
+class SignupVerificationEmailKeySerializer(serializers.Serializer):
+    key = serializers.CharField(required=True)
 
-    class Meta:
-        model = get_user_model()
-        fields = (
-            'phone', 'email', # TODO: replace with dynamic values
-        )
+    def validate(self, data):
+        # TODO: prevent double call for the function/endpoint
+        user = get_user_model().verify_email_key(data['key'])
+
+        if user:
+            if not user.is_email_verified:
+                # experimental / weak
+                if not user.is_phone_verified:
+                    user.is_active = True
+
+                user.is_email_verified = True
+                user.save()
+
+            data['user'] = user
+
+        else:
+            msg = _('Confirmation code is invalid or expired')
+            raise serializers.ValidationError(msg)
+
+        return super().validate(data)
 
 
 class SignupVerificationUserSerializer(serializers.ModelSerializer):

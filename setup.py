@@ -10,7 +10,7 @@ def read(f):
 
 setup(
     name='django-multiform-authentication',
-    version='0.3.0',
+    version='0.3.1',
     url='http://multauth.sigent.com',
     license='BSD',
     description='Combined web and mobile authentication for Django.',
@@ -30,8 +30,6 @@ setup(
         'djangorestframework>=3.10.3, <4.0.0',
         'django-cors-headers==2.1.0', # temp ???
         'django-extra-fields>=0.9', # what ???
-        'drf-yasg>=1.16.1', # what ???
-        'packaging', # till drf-yasg fixed
         'django-localflavor>=1.6.2', # what ???
         'django-model-utils==3.0.0', # what ???
     ],
