@@ -12,8 +12,6 @@ twilio>=6.10.2
 djangorestframework>=3.10.3, <4.0.0
 django-cors-headers==2.1.0 # TEMP ???
 django-extra-fields>=0.9
-drf-yasg>=1.16.1
-packaging # till drf-yasg fixed
 
 # misc
 django-localflavor>=1.6.2

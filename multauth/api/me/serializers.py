@@ -3,14 +3,9 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
 
-from .. import PhoneDevice
-
 
 __all__ = (
     'UserSerializer',
-    'UserPasscodeSerializer',
-    'UserPasswordSerializer',
-    'UserPushcodeSerializer',
 )
 
 
@@ -52,7 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
     # def get_is_phone_pushcoded(self, obj):
     #     if obj.phone and obj.is_phone_verified:
     #         try:
-    #             device = PhoneDevice.objects.get(phone=obj.phone)
+    #             device = obj.get_phone_device()
     #             return bool(device.pushcode)
     #         except:
     #             return False
@@ -81,17 +76,3 @@ class UserSerializer(serializers.ModelSerializer):
         #         serializer_custom_user.save()
 
         return super().update(user, validated_data)
-
-
-class UserPasscodeSerializer(serializers.Serializer):
-    passcode = serializers.CharField()
-    # passcode_old = serializers.CharField()
-
-
-class UserPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField()
-    # password_old = serializers.CharField()
-
-
-class UserPushcodeSerializer(serializers.Serializer):
-    pushcode = serializers.CharField()
