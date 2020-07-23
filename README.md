@@ -1,11 +1,11 @@
-# Django Multiform Authentication
+# Django Multifactor Authentication
 
 NB. Complete refactoring coming soon.
 
-Combined web and mobile authentication for Django. It's not multi-factor, it's one-factor in multiple formats. Easily configurable and extendable with new authentication methods or services. Supported out-of-the-box methods by credential pairs:  
-- email / password
-- phone / passcode
-- ...add yours
+Combined web and mobile authentication for Django. It's not multi-factor, it's one-factor in multiple formats. Easily configurable and extendable with new authentication methods or services. Supported out-of-the-box methods:  
+- username
+- email
+- phone
 
 and service providers:  
 - Twilio
