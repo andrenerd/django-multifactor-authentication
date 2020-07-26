@@ -9,9 +9,9 @@ def read(f):
 
 
 setup(
-    name='django-multiform-authentication',
-    version='0.3.1',
-    url='http://multauth.sigent.com',
+    name='django-multifactor-authentication',
+    version='0.0.1',
+    url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
     description='Combined web and mobile authentication for Django.',
     long_description=read('README.md'),
@@ -20,23 +20,16 @@ setup(
     packages=find_packages(exclude=['tests', 'example']),
     include_package_data=True,
     install_requires=[
-        'django>=2.2',
-        'hashids>=1.2.0',
+        'django>=2.2, <4.0.0',
+        'djangorestframework>=3.10.3, <4.0.0',
         'phonenumbers>=8.0.0', # required by django-phonenumber-field only
-        'django-formtools>=2.1', # two-factor needs it "explicitly"
         'django-phonenumber-field>=3.0.1',
         'django_otp>=0.4.3',
-        'twilio>=6.10.2', # remove, make it optional
-        'djangorestframework>=3.10.3, <4.0.0',
-        'django-cors-headers==2.1.0', # temp ???
-        'django-extra-fields>=0.9', # what ???
-        'django-localflavor>=1.6.2', # what ???
-        'django-model-utils==3.0.0', # what ???
     ],
     python_requires='>=3.5',
     zip_safe=False,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 1 - Planning',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
@@ -46,6 +39,6 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     project_urls={
-        'Source': 'https://github.com/andrenerd/django-multiform-authentication',
+        'Source': 'https://github.com/andrenerd/django-multifactor-authentication',
     },
 )

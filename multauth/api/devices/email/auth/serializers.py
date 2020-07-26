@@ -25,7 +25,7 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
 
         else:
             msg = _('Confirmation code is invalid or expired')
-            raise serializers.ValidationError(msg)
+            raise exceptions.ValidationError(msg)
 
         return super().validate(data)
 
@@ -50,7 +50,7 @@ class SignupVerificationEmailKeySerializer(serializers.Serializer):
 
         else:
             msg = _('Confirmation code is invalid or expired')
-            raise serializers.ValidationError(msg)
+            raise exceptions.ValidationError(msg)
 
         return super().validate(data)
 

@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import user_passes_test
 def is_authenticated(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
     """
     Decorator for views that
-    limit access to "authenticated" users only
+    limit access to "authenticated users" only
     """
     actual_decorator = user_passes_test(
         lambda u: u.is_authenticated(),
@@ -29,7 +29,7 @@ def is_authenticated(function=None, redirect_field_name=REDIRECT_FIELD_NAME, log
 def is_admin(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
     """
     Decorator for views that
-    limit access to "bank_users" only
+    limit access to "authenticated admin users" only
     """
     actual_decorator = user_passes_test(
         lambda u: u.is_authenticated() and u.is_admin,
@@ -46,7 +46,7 @@ def is_admin(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=N
 # def is_custom_user(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
 #     """
 #     Decorator for views that
-#     limit access to "custom_users" only
+#     limit access to "authenticated custom users" only
 #     """
 #     actual_decorator = user_passes_test(
 #         lambda u: u.is_authenticated() and u.is_custom_user,

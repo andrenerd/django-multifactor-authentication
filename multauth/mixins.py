@@ -1,10 +1,12 @@
 from importlib import import_module
 
-from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
+from django_otp import devices_for_user
 
-from .devices import EmailDevice, PhoneDevice
+from .devices import UsernameDevice, EmailDevice, PhoneDevice
 from .decorators import (
     is_authenticated,
     is_admin,
@@ -12,42 +14,74 @@ from .decorators import (
 )
 
 
-MULTAUTH_DEVICES = tuple(getattr(settings, 'MULTAUTH_DEVICES', [
+DEVICES = tuple(getattr(settings, 'MULTAUTH_DEVICES', [
+    UsernameDevice,
     EmailDevice,
     PhoneDevice,
 ]));
 
-if not MULTAUTH_DEVICES:
-    msg = _('At least one Device should be added (see MULTAUTH_DEVICES settings)')
-    raise ValidationError(msg)
-
 
 mixin_classes = tuple(
-    getattr(import_module(d.__module__), d.USER_MIXIN) for d in MULTAUTH_DEVICES
+    getattr(import_module(d.__module__), d.USER_MIXIN) for d in DEVICES
 )
 
-mixin_devices = tuple(
-    c.__module__.split('.')[-1] for c in mixin_classes
-)
+if not mixin_classes:
+    msg = _('At least one Device should be added (see MULTAUTH_DEVICES settings)')
+    raise ValueError(msg)
 
 mixin_identifiers = tuple(
-    c.IDENTIFIER_FIELD for c in mixin_classes
+    c.IDENTIFIER_FIELD for c in DEVICES if hasattr(c, 'IDENTIFIER_FIELD')
 )
 
-mixin_secrets = tuple(
-    c.SECRET_FIELD for c in mixin_classes # experimental
+if not mixin_identifiers:
+    msg = _('At least one identifier should be declared (see Device.IDENTIFIER_FIELD attribute)')
+    raise ValueError(msg)
+
+mixin_classes_username_fields = tuple(
+    c.USERNAME_FIELD for c in mixin_classes if hasattr(c, 'USERNAME_FIELD')
 )
 
-mixin_credentials = tuple(
-    (x, mixin_secrets[i]) for (i, x) in enumerate(mixin_identifiers) # experimental
+mixin_username_field = (
+    mixin_classes_username_fields[0] if mixin_classes_username_fields else mixin_identifiers[0]
 )
 
-mixin_settings = dict([
-    [
-        mixin_devices[i].upper() + '_SECRET_FIELD_REQUIRED',
-        getattr(x, 'SECRET_FIELD_REQUIRED', False),
-    ] for (i, x) in enumerate(mixin_classes) # experimental
-])
+# experimental
+@classmethod
+def mixin_get_device_classes(cls):
+    return list(DEVICES)
+
+# experimental
+@classmethod
+def mixin_get_device_class_by_identifier(cls, identifier):
+    if identifier not in mixin_identifiers:
+        return None
+
+    return DEVICES[mixin_identifiers.index(identifier)]
+
+# TOOD: add similar "pre_save" handler to update devices on identifiers updates
+@classmethod
+def mixin_post_save(cls, sender, instance, created, *args, **kwargs):
+    """
+    Create devices for created user
+    """
+    if not created:
+        return
+
+    user = instance
+    identifiers = [x for x in instance.IDENTIFIERS if getattr(instance, x, None)]
+
+    for identifier in identifiers:
+        device_class = instance.get_device_class_by_identifier(identifier)
+
+        d = device_class.objects.create(
+            user=user,
+            **{identifier: getattr(user, identifier)}
+        )
+
+# experimental
+def mixin_get_devices(self, confirmed=True):
+    # to think: can be sorted by order in the settings
+    return devices_for_user(self, confirmed)
 
 
 UserDevicesMixin = type(
@@ -57,19 +91,17 @@ UserDevicesMixin = type(
         '__module__': 'multauth',
         'Meta': type('Meta', (object,), {'abstract': True}),
 
-        'USERNAME_FIELD': mixin_identifiers[0], # experimental
-        'DENTIFIER_FIELD': mixin_identifiers, # experimental # just to override mixed value
-        'SECRET_FIELD': mixin_secrets, # experimental # just to override mixed value
-        'SECRET_FIELD_REQUIRED': None, # experimental # just to override mixed value
+        'USERNAME_FIELD': mixin_username_field,
+        'IDENTIFIERS': tuple(set(list(mixin_identifiers) + [mixin_username_field])), # drop duplicates
 
-        '_devices': mixin_devices,
-        '_identifiers': mixin_identifiers,
-        '_secrets': mixin_secrets, # experimental
-        '_credentials': mixin_credentials, # experimental
-
-        **mixin_settings,
+        '_post_save': mixin_post_save,
+        'get_device_classes': mixin_get_device_classes,
+        'get_device_class_by_identifier': mixin_get_device_class_by_identifier,
+        'get_devices': mixin_get_devices,
     }
 )
+
+post_save.connect(UserDevicesMixin._post_save, sender=settings.AUTH_USER_MODEL)
 
 
 class IsAuthenticatedMixin(object):

@@ -23,12 +23,14 @@ TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 class ChipDevice(AbstractDevice):
     """
-    Model with microchip number and token seed linked to a user.
+    Something in your head
+    https://www.youtube.com/watch?v=i92zJNGdW2U
     """
-    chip = ChipNumberField()
-    pushcode = models.CharField(_('Pushcode'), max_length=256, blank=True, null=True, unique=True, editable=False)
+    chip = ChipNumberField(unique=True)
+    hardcode = models.CharField(max_length=128) # experimental
 
     USER_MIXIN = 'ChipUserMixin'
+    IDENTIFIER_FIELD = 'chip'
 
     def __eq__(self, other):
         if not isinstance(other, ChipDevice):
