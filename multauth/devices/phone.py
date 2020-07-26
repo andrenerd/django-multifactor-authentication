@@ -27,12 +27,16 @@ TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 class PhoneDevice(AbstractDevice):
     """
-    Model with phone number and token seed linked to a user.
+    Could be also called as SmsDevice
+
     """
-    phone = PhoneNumberField()
-    pushcode = models.CharField(_('Pushcode'), max_length=256, blank=True, null=True, unique=True, editable=False)
+    phone = PhoneNumberField(unique=True)
+    hardcode = models.CharField(max_length=128) # experimental
+    # TODO: make it optional or ?
+    pushcode = models.CharField(max_length=256, blank=True, null=True, unique=True, editable=False)
 
     USER_MIXIN = 'PhoneUserMixin'
+    IDENTIFIER_FIELD = 'phone'
 
     def __eq__(self, other):
         if not isinstance(other, PhoneDevice):
@@ -46,7 +50,6 @@ class PhoneDevice(AbstractDevice):
 
     def clean(self):
         super().clean()
-        pass
 
     def generate_challenge(self, request=None):
         token = self.get_token()
@@ -91,32 +94,22 @@ class PhoneDevice(AbstractDevice):
 class PhoneUserMixin(AbstractUserMixin):
 
     phone = PhoneNumberField(_('Phone number'), blank=True, null=True, unique=True,
-        #help_text = _('Required.'),
+        # help_text = _('Required.'),
         error_messages = {
             'unique': _('A user with that phone number already exists.'),
         }
     )
-
-    passcode = models.CharField(_('Passcode'), max_length=128) # editable=False
-
-    is_phone_verified = models.BooleanField(_('Phone verified'), default=False,
-        help_text=_('Designates whether this user phone is verified.'),
-    )
-
-    # TODO: make this field work
-    # Stores the raw passcode if set_passcode() is called so that it can
-    # be passed to passcode_changed() after the model is saved.
-    _passcode = None
-
-    IDENTIFIER_FIELD = 'phone'
-    SECRET_FIELD = 'passcode'
-    SECRET_FIELD_REQUIRED = False # override with User.PHONE_SECRET_FIELD_REQUIRED
 
     class Meta:
         abstract = True
 
     def __str__(self):
         return str(getattr(self, 'phone', ''))
+
+    @property
+    def is_phone_confirmed(self):
+        device = self.get_phone_device()
+        return device.confirmed if device else False
 
     def get_phone_device(self):
         phone = getattr(self, 'phone', None)
@@ -158,50 +151,5 @@ class PhoneUserMixin(AbstractUserMixin):
     def verify(self, request=None):
         super().verify(request)
 
-        if self.phone and not self.is_phone_verified:
+        if self.phone and not self.is_phone_confirmed:
             self.verify_phone(request)
-
-    def set_secrets(self, **fields):
-        super().set_secrets(**fields)
-
-        if __class__.SECRET_FIELD in fields:
-            self.set_passcode(fields.get(__class__.SECRET_FIELD))
-
-    def check_secrets(self, **fields):
-        if __class__.IDENTIFIER_FIELD in fields:
-            if __class__.SECRET_FIELD in fields:
-                return (
-                        self.check_passcode(fields.get(__class__.SECRET_FIELD))
-                    and
-                        self.verify_phone_token(fields.get('token', None)) # refactor # TODO: is it needed?
-                )
-        else:
-            return super().check_secrets(**fields)
-
-    def set_passcode(self, raw_passcode):
-        self.passcode = make_password(raw_passcode)
-        self._passcode = raw_passcode
-
-    def check_passcode(self, raw_passcode):
-        """
-        Return a boolean of whether the raw_passcode was correct. Handles
-        hashing formats behind the scenes.
-        """
-        def setter(raw_passcode):
-            self.set_passcode(raw_passcode)
-
-            # Password hash upgrades shouldn't be considered passcode changes.
-            self._passcode = None
-            self.save(update_fields=['passcode'])
-
-        return check_password(raw_passcode, self.passcode, setter)
-
-    def set_unusable_passcode(self):
-        # Set a value that will never be a valid hash
-        self.passcode = make_password(None)
-
-    def has_usable_passcode(self):
-        """
-        Return False if set_unusable_passcode() has been called for this user.
-        """
-        return is_passcode_usable(self.passcode)

@@ -1,4 +1,5 @@
 from functools import reduce
+from django_otp import match_token
 
 from django.db import models
 from django.utils import timezone
@@ -6,32 +7,47 @@ from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, AbstractBaseUser, PermissionsMixin
-from django.contrib.auth.hashers import check_password, make_password
-# from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.conf import settings
 
 from .managers import UserManager
 from .mixins import UserDevicesMixin
 
 
-class AbstractUser(UserDevicesMixin, AbstractBaseUser, PermissionsMixin):
+# RESERVED # PASSWORD, PASSCODE, HARDCODE = 'password', 'passcode', 'hardcode'
+# RESERVED # MULTAUTH_PASSCODE_DEVICE = ...
 
-    # username_validator = UnicodeUsernameValidator()
+SECRETS = tuple(getattr(settings, 'MULTAUTH_SECRETS', (
+    'password', 'passcode', 'hardcode',
+)));
 
-    # TODO: move to UsernameDevice
-    # username = models.CharField(_('username'), max_length=150, unique=True, # editable=False
-    #     help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
-    #     validators=[username_validator],
-    #     error_messages={
-    #         'unique': _("A user with that username already exists."),
-    #     },
-    # )
+
+class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
     first_name = models.CharField(_('First name'), max_length=30, null=True, blank=True)
     last_name = models.CharField(_('Last name'), max_length=150, null=True, blank=True)
 
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
     objects = UserManager()
 
     REQUIRED_FIELDS = [] # TODO: think about it
+    SECRETS = SECRETS
+
+    # TODO" automatically create and update Device information when
+    # corresponding user fields are affected
 
     class Meta:
         abstract = True
@@ -41,30 +57,8 @@ class AbstractUser(UserDevicesMixin, AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return '{0} ({1})'.format(
             self.get_full_name() or 'Noname',
-            ', '.join([getattr(self, i) for i in self._identifiers if getattr(self, i)]) or '-', # experimental
+            ', '.join([str(getattr(self, i)) for i in self.IDENTIFIERS if getattr(self, i)]) or '-', # experimental
         ).strip()
-
-    # experimental
-    @classmethod
-    def get_required_credentials(cls):
-        attr = lambda x: '_'.join((x.upper(), 'SECRET_FIELD_REQUIRED'))
-
-        return tuple(map(
-            lambda i, x: x if getattr(cls, attr(cls._devices[i]), False) else (x[0],), # drop non required secrets
-            range(cls._credentials.__len__()), cls._credentials,
-        ))
-
-    @classmethod
-    def validate(cls, **fields):
-        required_credentials = cls.get_required_credentials()
-
-        # at least one "pair" of credentials should be present
-        if not [
-            credentials for credentials in required_credentials
-                if reduce(lambda b, x: fields.get(x) and b, credentials, True)
-        ]:
-            msg = _('Invalid user credentials. Must include ' + ' or '.join('"' + '/'.join(x) + '"' for x in required_credentials))
-            raise ValueError(msg)
 
     def get_full_name(self):
         return '{0} {1}'.format(self.first_name or '', self.last_name or '').strip()
@@ -72,8 +66,44 @@ class AbstractUser(UserDevicesMixin, AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.first_name
 
-    def set_secrets(self, **fields):
-        super().set_secrets(**fields)
+    # TODO: how about to make device required
+    def set_passcode(self, device=None):
+        return device.generate_challenge()
+        # TODO: complete it
+        # MULTAUTH_PASSCODE_DEVICE = getattr(settings, 'MULTAUTH_PASSCODE_DEVICE', None);
+        # MULTAUTH_PASSCODE_LENGTH =
+        # MULTAUTH_PASSCODE_EXPIRY =
+
+    def check_passcode(self, passcode, device=None):
+        # don't mess this "token" with authorization tokens
+        if device:
+            return device.verify_token(passcode)
+        else:
+            return bool(match_token(self, passcode))
+
+    # TODO: how about to make device required
+    def set_hardcode(self, raw_hardcode, device=None):
+        if not user.pk:
+            raise self.__class__.ObjectDoesNotExist('User should be saved, before setting hardcode')
+
+        if not device:
+            devices = [x for x in self.get_devices() if hasattr(x, 'hardcode')]
+            device = devices[0] if devices else None
+
+        if not device or not device.has_hardcode:
+            raise self.__class__.ObjectDoesNotExist('No device having hardcode found')
+
+        device.set_hardcode(raw_hardcode)
+
+    def check_hardcode(self, raw_hardcode, device=None):
+        if not device:
+            devices = [x for x in self.get_devices() if hasattr(x, 'hardcode')]
+            device = devices[0] if devices else None
+
+        if not device or not device.has_hardcode:
+            raise self.__class__.ObjectDoesNotExist('No device having hardcode found')
+
+        device.check_hardcode(raw_hardcode)
 
 
 class User(AbstractUser):

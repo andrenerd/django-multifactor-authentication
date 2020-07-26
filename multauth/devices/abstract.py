@@ -1,5 +1,6 @@
 from binascii import unhexlify
 from django.db import models
+from django.contrib.auth.hashers import check_password, make_password
 from django.conf import settings
 
 from django_otp.oath import totp
@@ -19,7 +20,11 @@ def key_validator(*args, **kwargs):
 
 
 class AbstractDevice(Device):
-
+    """
+    Device token, one-time password, is used under "name" passcode.
+    To not mess it with authorization token.
+    (term "token" is derived from device_otp package and kept for Devices)
+    """
     key = models.CharField(
         max_length=40,
         validators=[key_validator],
@@ -27,12 +32,18 @@ class AbstractDevice(Device):
         help_text='Hex-encoded secret key'
     )
 
+    USER_MIXIN = None # required
+    IDENTIFIER_FIELD = None # required
+
+    # see _password attribure in AbstractBaseUser
+    _hardcode = None
+
     class Meta:
         app_label = 'multauth'
         abstract = True
 
-    def __str__(self):
-      raise NotImplementedError
+    # def __str__(self):
+    #   raise NotImplementedError
 
     @property
     def bin_key(self):
@@ -53,14 +64,32 @@ class AbstractDevice(Device):
 
         return False
 
-    def generate_challenge(self, request=None):
-      raise NotImplementedError
+    @property
+    def has_hardcode(self):
+        return hastattr(self, 'hardcode')
+
+    # based on check_hardcode from django.contrib.auth.hashers
+    def set_hardcode(self, raw_hardcode):
+        if not self.has_hardcode:
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the device')
+
+        self.hardcode = make_password(raw_hardcode)
+        # reserved # self._hardcode = raw_hardcode
+
+    # based on check_hardcode from django.contrib.auth.hashers
+    def check_hardcode(self, raw_hardcode):
+        if not self.has_hardcode:
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the device')
+
+        def setter(raw_hardcode):
+            self.set_hardcode(raw_hardcode)
+            self._hardcode = None
+            self.save(update_fields=['hardcode'])
+
+        return check_password(raw_hardcode, self.hardcode, setter)
 
 
 class AbstractUserMixin(models.Model):
-
-    IDENTIFIER_FIELD = None # required
-    SECRET_FIELD = None # semi-required
 
     class Meta:
         abstract = True
@@ -71,8 +100,3 @@ class AbstractUserMixin(models.Model):
     def verify(self, request=None):
         pass
 
-    def set_secrets(self, **fields):
-        pass
-
-    def check_secrets(self, **fields):
-        pass

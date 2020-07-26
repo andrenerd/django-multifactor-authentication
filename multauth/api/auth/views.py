@@ -74,6 +74,7 @@ class SignupView(views.APIView):
             serializer.is_valid(raise_exception=True)
             validated_data = serializer.validated_data
 
+        # TODO: refactor
         # send confirmation code if user exists
         except Exception as e:
             if hasattr(e, 'get_full_details'):
@@ -131,7 +132,6 @@ class SignupVerificationView(views.APIView):
     def post(self, request):
         user = request.user
 
-        # TODO: replace. veryfy based on passed "device"
         user.verify(request)
 
         serializer = serializers.SignupVerificationUserSerializer(user)

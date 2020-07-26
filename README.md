@@ -1,10 +1,15 @@
-# Django Multiform Authentication
+# Django Multifactor Authentication
 
 
-Combined web and mobile authentication for Django. It's not multi-factor, it's one-factor in multiple formats. Easily configurable and extendable with new authentication methods or services. Supported out-of-the-box methods by credential pairs:  
-- email / password
-- phone / passcode
-- ...add yours
+NB. Alpha version. Deep refactoring will be completed soon.
+
+
+[![pypi version](https://img.shields.io/pypi/v/django-multifactorr-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
+
+
+Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases. Easily configurable and extendable with new authentication methods or services. Authenticaton scenarios, called `flows`, based on the next `identifiers` and `secrets`, which can be used or not used in multiple combinations:
+- username, email, phone, ...
+- password, passcode (one-time pass or token), hardcode (device or card id), ...
 
 and service providers:  
 - Twilio
@@ -25,20 +30,29 @@ Base settings (required):
 ```
 AUTH_USER_MODEL = 'multauth.User'
 AUTHENTICATION_BACKENDS = (
-    'multauth.backends.UserBackend',
-    # ...other custom backends
+    'multauth.backends.ModelBackend',
+    # ...other backends
 )
 
 MULTAUTH_DEBUG = True # False by default
-MULTAUTH_TOKEN_LENGTH = 6 # size in digits
-MULTAUTH_TOKEN_EXPIRY = 3600 * 24 * 3 # time in seconds
+MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
+MULTAUTH_PASSCODE_EXPIRY = 3600 * 24 * 3 # time in seconds
+
+
+MULTAUTH_FLOWS = (
+  ('phone', 'hardcode', 'passcode',),
+  ('email', 'password', 'passcode',),
+  ('username', 'password',),
+)
+
 ```
 
 
 Extra settings (optional):  
-(see built-in [devices](/), [providers](/) and [templates](/))  
+(see built-in [devices](./multauth/devices), [providers](./multauth/providers) and [templates](./multauth/templates))  
 ```
 MULTAUTH_DEVICES = [
+  UsernameDevice,
   EmailDevice,
   PhoneDevice,
 ] # by default
@@ -58,46 +72,4 @@ MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID = 'SID'
 MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN = 'TOKEN'
 MULTAUTH_PROVIDER_TWILIO_CALLER_ID = 'CALLER_ID'
 ```
-
-
-
-
-### Flows
-
-
-##### Email
-This authentication flow is pretty the same as provided by Django by default. Extra feature
-is that it's handaled by rest api too, not function calls only.
-- User provides `email` as identifier (email address), [url]
-- User confirms the identifier (`email`) [url, func]
-- Able to signin using the credentials: `email`/`password`
-- ...add more
-
-
-##### Phone
-- User provides `phone` as identifier (phone number), [url]
-- User confirms the identifier (`phone`) [url, func]
-- Able to signin using the credentials: `phone`/`secret`*** [url]
-- ...add more
-
-*** `passcode` (set by user explicitly) or `token` (set by app automatically) supposed to be used as secret
-
-
-##### More
-Let us know what other authentication flows would be nice to add.
-For example, you decide to add `microchip implants` based authentication. There are several simple steps to take:
-- to add Device (as example)[link?]
-- to add at least one Provider associated with the Device (as example)[link?]
-- to extend User model fields and methods (as example)[link?], [as example, _EmailAbstractUser]
-- to extend api with new endpoints [see]
-- tweak settings to activate the flow:
-```
-MULTAUTH_DEVICES = [
-  PhoneDevice,
-  ChipDevice, # long-awaited microchip implants ;)
-]
-
-AUTH_USER_MODEL = 'app.ChipPhoneUser'
-```
-
 

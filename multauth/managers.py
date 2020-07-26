@@ -1,16 +1,23 @@
 from django.contrib.auth.models import UserManager as _UserManager
+from django.contrib.auth.hashers import check_password, make_password
 
 
 class UserManager(_UserManager):
 
-    def _create_user(self, **fields):
-        self.model.validate(**fields) # validate values
+    def _create_user(self, username=None, password=None, **fields):
+        identifiers = self.model.IDENTIFIERS
+        identifiers_in_fields = [x for x in identifiers if x in fields.keys()]
+
+        if not username and not identifiers_in_fields:
+            raise ValueError('The given username or any identifier must be set')
+
         user = self.model(**fields)
-
         user.clean() # normalize values
-        user.set_secrets(**fields) # hash pass codes
-        user.save(using=self._db)
 
+        if password:
+            user.password = make_password(password)
+
+        user.save(using=self._db)
         return user
 
     def create_user(self, **fields):

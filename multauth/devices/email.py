@@ -37,12 +37,12 @@ TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
 class EmailDevice(AbstractDevice):
-    """
-    Model with email address and token seed linked to a user.
-    """
-    email = models.EmailField()
+
+    email = models.EmailField(unique=True)
+    # reserved # hardcode = models.CharField(max_length=128) # experimental
 
     USER_MIXIN = 'EmailUserMixin'
+    IDENTIFIER_FIELD = 'email'
 
     def __eq__(self, other):
         if not isinstance(other, EmailDevice):
@@ -156,25 +156,11 @@ class EmailDevice(AbstractDevice):
 class EmailUserMixin(AbstractUserMixin):
 
     email = models.EmailField(_('Email address'), blank=True, null=True, unique=True,
-        #help_text = _('Required.'),
+        # help_text = _('Required.'),
         error_messages = {
             'unique': _('A user with that email address already exists.'),
         }
     )
-
-    password = models.CharField(_('password'), max_length=128)
-
-    is_email_verified = models.BooleanField(_('Email verified'), default=False,
-        help_text=_('Designates whether this user email is verified.'),
-    )
-
-    # Stores the raw password if set_password() is called so that it can
-    # be passed to password_changed() after the model is saved.
-    _password = None
-
-    IDENTIFIER_FIELD = 'email'
-    SECRET_FIELD = 'password'
-    SECRET_FIELD_REQUIRED = True # override with User.EMAIL_SECRET_FIELD_REQUIRED
 
     EMAIL_FIELD = 'email'
 
@@ -184,9 +170,16 @@ class EmailUserMixin(AbstractUserMixin):
     def __str__(self):
         return str(getattr(self, 'email'))
 
+    @property
+    def is_email_confirmed(self):
+        device = self.get_email_device()
+        return device.confirmed if device else False
+
     def clean(self):
         super().clean()
-        self.email = self.__class__.objects.normalize_email(self.email)
+
+        if self.email:
+            self.email = self.__class__.objects.normalize_email(self.email)
 
     def get_email_device(self):
         email = getattr(self, 'email', '')
@@ -249,43 +242,8 @@ class EmailUserMixin(AbstractUserMixin):
         device = EmailDevice.verify_key(key)
         return device.user if device else None
 
-    # TODO: try to declare it here nicely
-    # def set_unusable_password(self):
-    #     # Set a value that will never be a valid hash
-    #     self.password = make_password(None)
-
-    # TODO: try to declare it here nicely
-    # def has_usable_password(self):
-    #     """
-    #     Return False if set_unusable_password() has been called for this user.
-    #     """
-    #     return is_password_usable(self.password)
-
     def verify(self, request=None):
         super().verify(request)
 
-        if self.email and not self.is_email_verified:
+        if self.email and not self.is_email_confirmed:
             self.verify_email(request)
-
-    def set_secrets(self, **fields):
-        super().set_secrets(**fields)
-
-        if __class__.SECRET_FIELD in fields:
-            self.set_password(fields.get(__class__.SECRET_FIELD))
-
-    def check_secrets(self, **fields):
-        if __class__.IDENTIFIER_FIELD in fields:
-            if __class__.SECRET_FIELD in fields:
-                return self.check_password(fields.get(__class__.SECRET_FIELD))
-
-            # TODO: try to clarify later
-            # url-passed token (for email verification or so)
-            if 'token' in fields:
-                return self.verify_email_token(fields.get('token'))
-
-        else:
-            return super().check_secrets(**fields)
-
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-        self._password = raw_password
