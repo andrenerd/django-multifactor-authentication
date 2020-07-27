@@ -22,50 +22,24 @@ class TokenSerializer(serializers.Serializer):
 
 
 class SigninSerializer(serializers.ModelSerializer):
-    token = serializers.CharField(required=False) # aka one-time-passcode
-
     class Meta:
         model = get_user_model()
-        identifiers_fields = [x for x in model.IDENTIFIERS]
-        secrets_fields = [x for x in model.SECRETS]
+        fields = tuple(list(model.IDENTIFIERS) + list(model.SECRETS))
 
-        fields = tuple(identifiers_fields + secrets_fields + [
-            'token'
-        ])
-
+        # experimental
         extra_kwargs = dict([]
-            + [(x, {'required': False, 'validators': None}) for x in identifiers_fields]
-            + [(x, {'required': False}) for x in secrets_fields]
+            + [(x, {'required': False, 'validators': None}) for x in model.IDENTIFIERS]
+            + [(x, {'required': False}) for x in model.SECRETS]
         )
 
-    # # TODO refactor and add to validate()
-    # # the requirements would be: indentifier and at "first" secret are required
-    # @classmethod
-    # def validate(cls, required_only=True, **fields):
-    #     # TEMP
-    #     return
-
-    #     # TODO: move it to ModelBackend !
-    #     # TODO: temp
-    #     required_credentials = list(cls.IDENTIFIERS) + list(cls.SECRETS)
-    #     # RESERVED
-    #     # required_credentials = \
-    #     #     cls.get_required_credentials() if required_only else cls._credentials
-
-    #     # at least one "pair" of credentials should be present
-    #     if not [
-    #         credentials for credentials in required_credentials
-    #             if reduce(lambda b, x: fields.get(x) and b, credentials, True)
-    #     ]:
-    #         msg = _('Invalid user credentials. Must include ' + ' or '.join('"' + '/'.join(x) + '"' for x in required_credentials))
-    #         raise ValueError(msg)
     def validate(self, data):
         model = self.Meta.model
 
-        try:
-            model.validate(required_only=False, **data) # experimental
-        except ValueError as e:
-            raise exceptions.ValidationError(str(e))
+        # check identifiers
+        data_identifiers = [x for x in data if x in model.IDENTIFIERS and data.get(x, None)]
+        if not data_identifiers:
+            msg = _('Invalid user credentials. No valid identifier fields found')
+            raise exceptions.ValidationError(msg)
 
         user = authenticate(**data)
 

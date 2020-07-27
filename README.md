@@ -7,7 +7,7 @@ NB. Alpha version. Deep refactoring will be completed soon.
 [![pypi version](https://img.shields.io/pypi/v/django-multifactorr-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
 
 
-Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases. Easily configurable and extendable with new authentication methods or services. Authenticaton scenarios, called `flows`, based on the next `identifiers` and `secrets`, which can be used or not used in multiple combinations:
+Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases. Easily configurable and extendable with new authentication methods or services. Authenticaton scenarios, called `flows`, are based on `identifiers` and `secrets`, which can be used or not used in multiple combinations:
 - username, email, phone, ...
 - password, passcode (one-time pass or token), hardcode (device or card id), ...
 
@@ -31,18 +31,18 @@ Base settings (required):
 AUTH_USER_MODEL = 'multauth.User'
 AUTHENTICATION_BACKENDS = (
     'multauth.backends.ModelBackend',
-    # ...other backends
+    # ...etc
 )
 
 MULTAUTH_DEBUG = True # False by default
 MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
 MULTAUTH_PASSCODE_EXPIRY = 3600 * 24 * 3 # time in seconds
 
-
 MULTAUTH_FLOWS = (
-  ('phone', 'hardcode', 'passcode',),
-  ('email', 'password', 'passcode',),
-  ('username', 'password',),
+    ('phone', 'hardcode', 'passcode',),
+    ('email', 'password', 'passcode',),
+    ('username', 'password',),
+    # ...etc
 )
 
 ```

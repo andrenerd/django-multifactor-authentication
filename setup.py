@@ -10,10 +10,10 @@ def read(f):
 
 setup(
     name='django-multifactor-authentication',
-    version='0.0.1',
+    version='0.0.3',
     url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
-    description='Combined web and mobile authentication for Django.',
+    description='Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases.',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     author='Andrei Vasin',
@@ -29,7 +29,7 @@ setup(
     python_requires='>=3.5',
     zip_safe=False,
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
