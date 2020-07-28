@@ -74,22 +74,11 @@ class SignupView(views.APIView):
             serializer.is_valid(raise_exception=True)
             validated_data = serializer.validated_data
 
-        # TODO: refactor
-        # send confirmation code if user exists
         except Exception as e:
-            if hasattr(e, 'get_full_details'):
-                errors = e.get_full_details().get('phone')
-
-                if errors:
-                    code = errors.pop()['code']
-
-                    if code == 'unique':
-                        user = get_user_model().objects.get(phone=data.get('phone'))
-
-                        if user.check_passcode(data.get('passcode')):
-                            user.verify_phone(request)
-
-            raise e
+            # what to do?
+            # if user, for example, removed the app,
+            # reinstalled it again. and the app tries to signup from the scratch?
+            pass
 
         # create user
         user = get_user_model().objects.create_user(**validated_data)
@@ -103,6 +92,8 @@ class SignupView(views.APIView):
         #
         # user.groups_add(user.GROUP_CUSTOM_USER)
 
+        # send verification request
+        # to all the unverified devices
         user.verify(request)
 
         # let's (re)create token
@@ -132,6 +123,7 @@ class SignupVerificationView(views.APIView):
     def post(self, request):
         user = request.user
 
+        # TODO: should it be called for specific devices?
         user.verify(request)
 
         serializer = serializers.SignupVerificationUserSerializer(user)

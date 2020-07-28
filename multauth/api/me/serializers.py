@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
 
+UserModel = get_user_model()
+
 
 __all__ = (
     'UserSerializer',
@@ -20,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
     # RESERVED # is_phone_pushcoded = serializers.SerializerMethodField()
 
     class Meta:
-        model = get_user_model()
+        model = UserModel
         fields = (
             'id',
             'first_name', 'last_name',

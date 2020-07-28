@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
 
+UserModel = get_user_model()
+
 
 __all__ = (
     'SigninSerializer',
@@ -15,6 +17,8 @@ __all__ = (
     'TokenSerializer',
 )
 
+IDENTIFIERS = list(UserModel.IDENTIFIERS)
+SECRETS = list(UserModel.SECRETS)
 
 class TokenSerializer(serializers.Serializer):
     token = serializers.CharField(read_only=True)
@@ -22,21 +26,24 @@ class TokenSerializer(serializers.Serializer):
 
 
 class SigninSerializer(serializers.ModelSerializer):
+    hardcode = serializers.CharField(required=False)
+    passcode = serializers.CharField(required=False)
+
     class Meta:
-        model = get_user_model()
-        fields = tuple(list(model.IDENTIFIERS) + list(model.SECRETS))
+        model = UserModel
+        fields = tuple(IDENTIFIERS + SECRETS)
 
         # experimental
         extra_kwargs = dict([]
-            + [(x, {'required': False, 'validators': None}) for x in model.IDENTIFIERS]
-            + [(x, {'required': False}) for x in model.SECRETS]
+            + [(x, {'required': False, 'validators': None}) for x in IDENTIFIERS]
+            + [(x, {'required': False}) for x in SECRETS]
         )
 
     def validate(self, data):
         model = self.Meta.model
 
         # check identifiers
-        data_identifiers = [x for x in data if x in model.IDENTIFIERS and data.get(x, None)]
+        data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
         if not data_identifiers:
             msg = _('Invalid user credentials. No valid identifier fields found')
             raise exceptions.ValidationError(msg)
@@ -59,47 +66,46 @@ class SignupSerializer(serializers.ModelSerializer):
     """
     For write (POST...) requests only
     """
+    hardcode = serializers.CharField(required=False)
+    passcode = serializers.CharField(required=False) # useless?
+
     class Meta:
-        model = get_user_model()
-        credentials_fields = list(model.IDENTIFIERS) + list(model.SECRETS)
+        model = UserModel
+        fields = tuple([]
+            + ['first_name', 'last_name']
+            + IDENTIFIERS
+            + SECRETS
+        )
 
-        fields = tuple(credentials_fields + [
-            'first_name', 'last_name',
-        ])
-
-        extra_kwargs = dict(
-            (x, {'required': False}) for x in credentials_fields
+        # experimental
+        extra_kwargs = dict([]
+            + [(x, {'required': False, 'validators': None}) for x in IDENTIFIERS]
+            + [(x, {'required': False}) for x in SECRETS]
         )
 
     def validate(self, data):
         model = self.Meta.model
 
-        try:
-            model.validate(**data) # experimental
-        except ValueError as e:
-            raise exceptions.ValidationError(str(e))
-
+        # check against FLOWs, at least one set of "hard" credentials
+        # should present
         return super().validate(data)
 
 
 class SignupVerificationSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = get_user_model()
-        identifiers_fields = [x for x in model.IDENTIFIERS]
-
-        fields = tuple(identifiers_fields + [
-            # pass
-        ])
+        model = UserModel
+        fields = model.IDENTIFIERS
 
 
 class SignupVerificationUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = get_user_model()
-        identifiers_fields = [x for x in model.IDENTIFIERS]
-        extra_fields = [f.name for f in model._meta.get_fields() if f.name.endswith('verified')] # tricky
+        model = UserModel
 
-        fields = tuple(identifiers_fields + extra_fields + [
-            'is_active',
-        ])
+        confirmation_fields = ['is_' + x + '_confirmed' for x in model.IDENTIFIERS] # why not
+        fields = tuple([]
+            + list(model.IDENTIFIERS)
+            + [x for x in confirmation_fields if hasattr(UserModel, x)] # only that way :/
+            + ['is_active']
+        )
