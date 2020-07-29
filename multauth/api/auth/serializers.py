@@ -35,7 +35,7 @@ class SigninSerializer(serializers.ModelSerializer):
 
         # experimental
         extra_kwargs = dict([]
-            + [(x, {'required': False, 'validators': None}) for x in IDENTIFIERS]
+            + [(x, {'required': False}) for x in IDENTIFIERS] # 'validators': None
             + [(x, {'required': False}) for x in SECRETS]
         )
 
@@ -45,7 +45,7 @@ class SigninSerializer(serializers.ModelSerializer):
         # check identifiers
         data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
         if not data_identifiers:
-            msg = _('Invalid user credentials. No valid identifier fields found')
+            msg = _('Invalid user credentials. No valid identifier found')
             raise exceptions.ValidationError(msg)
 
         user = authenticate(**data)
@@ -79,15 +79,21 @@ class SignupSerializer(serializers.ModelSerializer):
 
         # experimental
         extra_kwargs = dict([]
-            + [(x, {'required': False, 'validators': None}) for x in IDENTIFIERS]
+            + [(x, {'required': False}) for x in IDENTIFIERS] # 'validators': None
             + [(x, {'required': False}) for x in SECRETS]
         )
 
     def validate(self, data):
         model = self.Meta.model
 
-        # check against FLOWs, at least one set of "hard" credentials
-        # should present
+        # check for one valid idntifier
+
+        # check identifiers
+        data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
+        if not data_identifiers:
+            msg = _('Invalid user credentials. No valid identifier found')
+            raise exceptions.ValidationError(msg)
+
         return super().validate(data)
 
 

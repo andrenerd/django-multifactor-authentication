@@ -8,7 +8,7 @@ UserModel = get_user_model()
 
 FLOWS = tuple(getattr(settings, 'MULTAUTH_FLOWS', (
     ('username', 'password'),
-    ('email', 'password'),
+    #('email', 'password'),
 )));
 
 FLOWS = FLOWS if type(FLOWS[0]) is tuple else tuple([FLOWS])

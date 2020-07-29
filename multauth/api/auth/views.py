@@ -70,15 +70,8 @@ class SignupView(views.APIView):
         data = request.data
         serializer = self.serializer_class(data=data)
 
-        try:
-            serializer.is_valid(raise_exception=True)
-            validated_data = serializer.validated_data
-
-        except Exception as e:
-            # what to do?
-            # if user, for example, removed the app,
-            # reinstalled it again. and the app tries to signup from the scratch?
-            pass
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
 
         # create user
         user = get_user_model().objects.create_user(**validated_data)
