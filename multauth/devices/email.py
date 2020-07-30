@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import check_password, is_password_usable, make
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 from django_otp.util import random_hex

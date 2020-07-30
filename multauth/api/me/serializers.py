@@ -1,7 +1,9 @@
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
+
+UserModel = get_user_model()
 
 
 __all__ = (
@@ -20,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
     # RESERVED # is_phone_pushcoded = serializers.SerializerMethodField()
 
     class Meta:
-        model = get_user_model()
+        model = UserModel
         fields = (
             'id',
             'first_name', 'last_name',

@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions, parsers, views, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -70,26 +70,8 @@ class SignupView(views.APIView):
         data = request.data
         serializer = self.serializer_class(data=data)
 
-        try:
-            serializer.is_valid(raise_exception=True)
-            validated_data = serializer.validated_data
-
-        # TODO: refactor
-        # send confirmation code if user exists
-        except Exception as e:
-            if hasattr(e, 'get_full_details'):
-                errors = e.get_full_details().get('phone')
-
-                if errors:
-                    code = errors.pop()['code']
-
-                    if code == 'unique':
-                        user = get_user_model().objects.get(phone=data.get('phone'))
-
-                        if user.check_passcode(data.get('passcode')):
-                            user.verify_phone(request)
-
-            raise e
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
 
         # create user
         user = get_user_model().objects.create_user(**validated_data)
@@ -103,6 +85,8 @@ class SignupView(views.APIView):
         #
         # user.groups_add(user.GROUP_CUSTOM_USER)
 
+        # send verification request
+        # to all the unverified devices
         user.verify(request)
 
         # let's (re)create token
@@ -132,6 +116,7 @@ class SignupVerificationView(views.APIView):
     def post(self, request):
         user = request.user
 
+        # TODO: should it be called for specific devices?
         user.verify(request)
 
         serializer = serializers.SignupVerificationUserSerializer(user)

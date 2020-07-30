@@ -66,6 +66,9 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     def get_short_name(self):
         return self.first_name
 
+    def verify(self, request=None):
+        super().verify(request)
+
     # TODO: how about to make device required
     def set_passcode(self, device=None):
         return device.generate_challenge()
