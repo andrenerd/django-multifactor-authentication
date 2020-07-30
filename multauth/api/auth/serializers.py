@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
@@ -25,43 +25,6 @@ class TokenSerializer(serializers.Serializer):
     # RESERVED # expired_datetime = serializers.DateTimeField(read_only=True) # could be timestamp
 
 
-class SigninSerializer(serializers.ModelSerializer):
-    hardcode = serializers.CharField(required=False)
-    passcode = serializers.CharField(required=False)
-
-    class Meta:
-        model = UserModel
-        fields = tuple(IDENTIFIERS + SECRETS)
-
-        # experimental
-        extra_kwargs = dict([]
-            + [(x, {'required': False}) for x in IDENTIFIERS] # 'validators': None
-            + [(x, {'required': False}) for x in SECRETS]
-        )
-
-    def validate(self, data):
-        model = self.Meta.model
-
-        # check identifiers
-        data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
-        if not data_identifiers:
-            msg = _('Invalid user credentials. No valid identifier found')
-            raise exceptions.ValidationError(msg)
-
-        user = authenticate(**data)
-
-        if user:
-            if not user.is_active:
-                msg = _('User account is disabled.')
-                raise exceptions.ValidationError(msg)
-        else:
-            msg = _('Unable to log in with provided credentials.')
-            raise exceptions.ValidationError(msg)
-
-        data['user'] = user
-        return super().validate(data)
-
-
 class SignupSerializer(serializers.ModelSerializer):
     """
     For write (POST...) requests only
@@ -85,8 +48,6 @@ class SignupSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         model = self.Meta.model
-
-        # check for one valid idntifier
 
         # check identifiers
         data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
@@ -115,3 +76,45 @@ class SignupVerificationUserSerializer(serializers.ModelSerializer):
             + [x for x in confirmation_fields if hasattr(UserModel, x)] # only that way :/
             + ['is_active']
         )
+
+
+signin_serializer_fields = dict([
+    [x, serializers.ModelField(model_field=UserModel()._meta.get_field(x), required=False)]
+        for x in (IDENTIFIERS + SECRETS) if hasattr(UserModel, x)
+])
+
+
+def signin_serializer_validate(self, data):
+    # model = self.Meta.model
+
+    # check identifiers
+    data_identifiers = [x for x in data if x in IDENTIFIERS and data.get(x, None)]
+    if not data_identifiers:
+        msg = _('Invalid user credentials. No valid identifier found')
+        raise exceptions.ValidationError(msg)
+
+    user = authenticate(**data)
+
+    if user:
+        if not user.is_active:
+            msg = _('User account is disabled.')
+            raise exceptions.ValidationError(msg)
+    else:
+        msg = _('Unable to log in with provided credentials.')
+        raise exceptions.ValidationError(msg)
+
+    data['user'] = user
+    return super(SigninSerializer, self).validate(data)
+
+
+SigninSerializer = type(
+    'SigninSerializer',
+    (serializers.Serializer,),
+    {
+        # reserved # '__module__': 'multauth.api.auth',
+        'validate': signin_serializer_validate,
+        'hardcode': serializers.CharField(required=False),
+        'passcode': serializers.CharField(required=False),
+        **signin_serializer_fields,
+    }
+)

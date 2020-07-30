@@ -8,7 +8,7 @@ UserModel = get_user_model()
 
 FLOWS = tuple(getattr(settings, 'MULTAUTH_FLOWS', (
     ('username', 'password'),
-    #('email', 'password'),
+    ('email', 'password'),
 )));
 
 FLOWS = FLOWS if type(FLOWS[0]) is tuple else tuple([FLOWS])
@@ -73,7 +73,7 @@ class ModelBackend(_ModelBackend):
         except UserModel.DoesNotExist:
             # Run the default password hasher once to reduce the timing
             # difference between an existing and a nonexistent user (#20760).
-            UserModel().set_password(password)
+            UserModel().set_password(None)
         else:
             if self.user_can_authenticate(user):
                 flow_secrets = [x for x in flow if x in UserModel.SECRETS]

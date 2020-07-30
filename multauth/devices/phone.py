@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 from phonenumber_field.modelfields import PhoneNumberField

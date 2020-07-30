@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 from django_otp.util import random_hex
