@@ -19,6 +19,8 @@ __all__ = (
 
 IDENTIFIERS = list(UserModel.IDENTIFIERS)
 SECRETS = list(UserModel.SECRETS)
+SECRETS_WITHOUT_PASSCODE = [x for x in SECRETS if x != 'passcode']
+
 
 class TokenSerializer(serializers.Serializer):
     token = serializers.CharField(read_only=True)
@@ -30,20 +32,19 @@ class SignupSerializer(serializers.ModelSerializer):
     For write (POST...) requests only
     """
     hardcode = serializers.CharField(required=False)
-    passcode = serializers.CharField(required=False) # useless?
 
     class Meta:
         model = UserModel
         fields = tuple([]
             + ['first_name', 'last_name']
             + IDENTIFIERS
-            + SECRETS
+            + SECRETS_WITHOUT_PASSCODE
         )
 
         # experimental
         extra_kwargs = dict([]
             + [(x, {'required': False}) for x in IDENTIFIERS] # 'validators': None
-            + [(x, {'required': False}) for x in SECRETS]
+            + [(x, {'required': False}) for x in SECRETS_WITHOUT_PASSCODE]
         )
 
     def validate(self, data):

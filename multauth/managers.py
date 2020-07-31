@@ -14,6 +14,9 @@ class UserManager(_UserManager):
         user = self.model(**fields)
         user.clean() # normalize values
 
+        if username:
+            user.username = username
+
         if password:
             user.password = make_password(password)
 
