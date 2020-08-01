@@ -19,6 +19,8 @@ __all__ = (
 
 IDENTIFIERS = list(UserModel.IDENTIFIERS)
 SECRETS = list(UserModel.SECRETS)
+SECRETS_WITHOUT_PASSCODE = [x for x in SECRETS if x != 'passcode']
+
 
 class TokenSerializer(serializers.Serializer):
     token = serializers.CharField(read_only=True)
@@ -30,23 +32,23 @@ class SignupSerializer(serializers.ModelSerializer):
     For write (POST...) requests only
     """
     hardcode = serializers.CharField(required=False)
-    passcode = serializers.CharField(required=False) # useless?
 
     class Meta:
         model = UserModel
         fields = tuple([]
             + ['first_name', 'last_name']
             + IDENTIFIERS
-            + SECRETS
+            + SECRETS_WITHOUT_PASSCODE
         )
 
         # experimental
         extra_kwargs = dict([]
             + [(x, {'required': False}) for x in IDENTIFIERS] # 'validators': None
-            + [(x, {'required': False}) for x in SECRETS]
+            + [(x, {'required': False}) for x in SECRETS_WITHOUT_PASSCODE]
         )
 
     def validate(self, data):
+        data = super(SignupSerializer, self).validate(data)
         model = self.Meta.model
 
         # check identifiers
@@ -55,7 +57,12 @@ class SignupSerializer(serializers.ModelSerializer):
             msg = _('Invalid user credentials. No valid identifier found')
             raise exceptions.ValidationError(msg)
 
-        return super().validate(data)
+        user_data = dict([(x, data[x]) for x in data.keys() if x not in ['hardcode']])
+        user = model.objects.create_user(**user_data)
+
+        # TODO: save "hardcode" and other possible extra fields
+        data['user'] = user
+        return data
 
 
 class SignupVerificationSerializer(serializers.ModelSerializer):
@@ -85,6 +92,7 @@ signin_serializer_fields = dict([
 
 
 def signin_serializer_validate(self, data):
+    data = super(SigninSerializer, self).validate(data)
     # model = self.Meta.model
 
     # check identifiers
@@ -104,7 +112,7 @@ def signin_serializer_validate(self, data):
         raise exceptions.ValidationError(msg)
 
     data['user'] = user
-    return super(SigninSerializer, self).validate(data)
+    return data
 
 
 SigninSerializer = type(
