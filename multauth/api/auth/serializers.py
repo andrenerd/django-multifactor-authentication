@@ -48,6 +48,7 @@ class SignupSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        data = super(SignupSerializer, self).validate(data)
         model = self.Meta.model
 
         # check identifiers
@@ -56,7 +57,12 @@ class SignupSerializer(serializers.ModelSerializer):
             msg = _('Invalid user credentials. No valid identifier found')
             raise exceptions.ValidationError(msg)
 
-        return super().validate(data)
+        user_data = dict([(x, data[x]) for x in data.keys() if x not in ['hardcode']])
+        user = model.objects.create_user(**user_data)
+
+        # TODO: save "hardcode" and other possible extra fields
+        data['user'] = user
+        return data
 
 
 class SignupVerificationSerializer(serializers.ModelSerializer):
@@ -86,6 +92,7 @@ signin_serializer_fields = dict([
 
 
 def signin_serializer_validate(self, data):
+    data = super(SigninSerializer, self).validate(data)
     # model = self.Meta.model
 
     # check identifiers
@@ -105,7 +112,7 @@ def signin_serializer_validate(self, data):
         raise exceptions.ValidationError(msg)
 
     data['user'] = user
-    return super(SigninSerializer, self).validate(data)
+    return data
 
 
 SigninSerializer = type(

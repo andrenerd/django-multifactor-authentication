@@ -45,6 +45,13 @@ mixin_username_field = (
     mixin_classes_username_fields[0] if mixin_classes_username_fields else mixin_identifiers[0]
 )
 
+mixin_meta_options = {
+    'abstract': True,
+    'unique_together': (mixin_identifiers,)
+    # reserved # 'index_together': ...all possible combinations of two/three identifiers
+    # reserved # 'constraints': ... probably
+}
+
 # experimental
 @classmethod
 def mixin_get_device_classes(cls):
@@ -89,7 +96,7 @@ UserDevicesMixin = type(
     mixin_classes,
     {
         '__module__': 'multauth',
-        'Meta': type('Meta', (object,), {'abstract': True}),
+        'Meta': type('Meta', (object,), mixin_meta_options),
 
         'USERNAME_FIELD': mixin_username_field,
         'IDENTIFIERS': tuple(set(list(mixin_identifiers) + [mixin_username_field])), # drop duplicates

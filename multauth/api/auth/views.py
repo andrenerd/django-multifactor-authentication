@@ -71,10 +71,7 @@ class SignupView(views.APIView):
         serializer = self.serializer_class(data=data)
 
         serializer.is_valid(raise_exception=True)
-        validated_data = serializer.validated_data
-
-        # create user
-        user = get_user_model().objects.create_user(**validated_data)
+        user = serializer.validated_data['user']
 
         # EXAMPLE
         # TODO: move to connectors
