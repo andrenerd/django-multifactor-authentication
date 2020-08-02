@@ -57,10 +57,16 @@ class SignupSerializer(serializers.ModelSerializer):
             msg = _('Invalid user credentials. No valid identifier found')
             raise exceptions.ValidationError(msg)
 
+        # create user and related devices
         user_data = dict([(x, data[x]) for x in data.keys() if x not in ['hardcode']])
         user = model.objects.create_user(**user_data)
 
-        # TODO: save "hardcode" and other possible extra fields
+        # save extra devices fields
+        if data.get('hardcode', None):
+            for device in user.get_devices():
+                if device.has_hardcode:
+                    device.set_hardcode(data['hardcode'])
+
         data['user'] = user
         return data
 

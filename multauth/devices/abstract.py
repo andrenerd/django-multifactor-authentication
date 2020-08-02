@@ -66,7 +66,7 @@ class AbstractDevice(Device):
 
     @property
     def has_hardcode(self):
-        return hastattr(self, 'hardcode')
+        return hasattr(self, 'hardcode')
 
     # based on check_hardcode from django.contrib.auth.hashers
     def set_hardcode(self, raw_hardcode):
