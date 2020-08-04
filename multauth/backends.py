@@ -27,12 +27,8 @@ class ModelBackend(_ModelBackend):
 
         return None
 
-    def _get_flow(self, identifier):
-        for flow in self.FLOWS:
-            if identifier in flow:
-                return flow
-
-        return None
+    def _get_flows(self, identifier):
+        return [flow for flow in self.FLOWS if identifier in flow] or None
 
     def check_secrets(self, user, secrets, data):
         for secret in secrets:
@@ -63,9 +59,9 @@ class ModelBackend(_ModelBackend):
 
     def authenticate(self, request, **kwargs):
         identifier = self._get_identifier(kwargs)
-        flow = self._get_flow(identifier)
+        flows = self._get_flows(identifier)
 
-        if identifier is None or flow is None:
+        if identifier is None or flows is None:
             return
 
         try:
@@ -76,7 +72,8 @@ class ModelBackend(_ModelBackend):
             UserModel().set_password(None)
         else:
             if self.user_can_authenticate(user):
-                flow_secrets = [x for x in flow if x in UserModel.SECRETS]
+                for flow in flows:
+                    flow_secrets = [x for x in flow if x in UserModel.SECRETS]
 
-                if self.check_secrets(user, flow_secrets, kwargs):
-                    return user
+                    if self.check_secrets(user, flow_secrets, kwargs):
+                        return user
