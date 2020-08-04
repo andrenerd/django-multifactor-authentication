@@ -70,6 +70,8 @@ class PhoneDevice(AbstractDevice):
                     message=message,
                 ).send()
 
+        return token
+
     def _render_message(self, context):
         if hasattr(self, '_template_message'):
             return self._render_template(self._template_message, context)

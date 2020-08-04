@@ -14,8 +14,7 @@ from .mixins import UserDevicesMixin
 
 
 # RESERVED # PASSWORD, PASSCODE, HARDCODE = 'password', 'passcode', 'hardcode'
-# RESERVED # MULTAUTH_PASSCODE_DEVICE = ...
-
+PASSCODE_DEVICE = getattr(settings, 'MULTAUTH_PASSCODE_DEVICE', None);
 SECRETS = tuple(getattr(settings, 'MULTAUTH_SECRETS', (
     'password', 'passcode', 'hardcode',
 )));
@@ -71,17 +70,20 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
     # TODO: how about to make device required
     def set_passcode(self, device=None):
+        # TODO: apply PASSCODE_DEVICE 
+
+        # reserved
+        # if not device or not device.is_interactive:
+        #     raise self.__class__.ObjectDoesNotExist('No interactive device found')
+
         return device.generate_challenge()
-        # TODO: complete it
-        # MULTAUTH_PASSCODE_DEVICE = getattr(settings, 'MULTAUTH_PASSCODE_DEVICE', None);
-        # MULTAUTH_PASSCODE_LENGTH =
-        # MULTAUTH_PASSCODE_EXPIRY =
 
     def check_passcode(self, passcode, device=None):
         # don't mess this "token" with authorization tokens
         if device:
             return device.verify_token(passcode)
         else:
+            # TODO: what's this???
             return bool(match_token(self, passcode))
 
     # TODO: how about to make device required
