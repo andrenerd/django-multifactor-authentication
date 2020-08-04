@@ -106,7 +106,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
         if not device or not device.has_hardcode:
             raise self.__class__.ObjectDoesNotExist('No device having hardcode found')
 
-        device.check_hardcode(raw_hardcode)
+        return device.check_hardcode(raw_hardcode)
 
 
 class User(AbstractUser):
