@@ -17,7 +17,6 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_phone_token(data.get('token')):
-            user.is_phone_verified = True
             user.is_active = True
             user.save()
 
