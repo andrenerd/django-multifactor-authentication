@@ -28,8 +28,9 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'date_joined', 'last_login', 'groups',
         )
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data, context):
         user = instance
+        request = context.request
 
         # update credential fields with initial values only
         if user.phone:
@@ -37,6 +38,16 @@ class UserSerializer(serializers.ModelSerializer):
 
         if user.email:
             validated_data.pop('email', None)
+
+        phone_old = user.phone
+        email_old = user.email
+
+        user = serializer.save()
+
+        if user.phone is not phone_old:
+            user.verify_phone(request)
+        if user.email is not email_old:
+            user.verify_email(request)
 
         # sample
         # if user.is_custom_user:

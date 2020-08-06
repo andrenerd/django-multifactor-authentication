@@ -41,19 +41,9 @@ class MeView(views.APIView):
         user = request.user
 
         serializer = serializers.UserSerializer(user,
-            data=data, partial=True) # context={'request': request}
+            data=data, partial=True, context={'request': request})
 
         serializer.is_valid(raise_exception=True)
-
-        phone_old = user.phone
-        email_old = user.email
-
-        user = serializer.save()
-
-        if user.phone is not phone_old:
-            user.verify_phone(request)
-        if user.email is not email_old:
-            user.verify_email(request)
 
         serializer = self.serializer_class(user)
         return Response(serializer.data)
