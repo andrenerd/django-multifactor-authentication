@@ -32,6 +32,11 @@ class UserSerializer(serializers.ModelSerializer):
         user = instance
         request = context.request
 
+        # TODO: if identifiers updated
+        # - chceck that atleast one exist
+        # set as non confirmed
+        # - run verification
+
         # update credential fields with initial values only
         if user.phone:
             validated_data.pop('phone', None)
