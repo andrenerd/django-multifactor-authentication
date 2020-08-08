@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import exceptions, serializers
 
 UserModel = get_user_model()
+IDENTIFIERS = list(UserModel.IDENTIFIERS)
 
 
 __all__ = (
@@ -12,52 +13,29 @@ __all__ = (
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """
-    For read (GET) requests only
-    """
     # custom_user = _UserCustomUserSerializer(required=False) # sample
-
-    phone = serializers.CharField(required=False)
-    email = serializers.CharField(required=False)
-    # RESERVED # is_phone_pushcoded = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
-        fields = (
-            'id',
-            'first_name', 'last_name',
-            'phone', 'email',
-            'date_joined',
-            'last_login',
-            'groups',
-            'is_phone_verified',
-            'is_email_verified',
-            # RESERVED # 'is_phone_pushcoded',
-
-            # 'custom_user', # sample
+        fields = tuple([]
+            + ['id', 'first_name', 'last_name']
+            + ['date_joined', 'last_login', 'groups']
+            + IDENTIFIERS
+            # todo: add "..._confirmed" field for each enabled device
         )
+
         read_only_fields = (
-            'date_joined',
-            'last_login',
-            'is_phone_verified',
-            'is_email_verified',
-            # RESERVED # 'is_phone_pushcoded',
-            'groups',
+            'id', 'date_joined', 'last_login', 'groups',
         )
 
-    # RESERVED
-    # def get_is_phone_pushcoded(self, obj):
-    #     if obj.phone and obj.is_phone_verified:
-    #         try:
-    #             device = obj.get_phone_device()
-    #             return bool(device.pushcode)
-    #         except:
-    #             return False
-    #     else:
-    #         return False
-
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data, context):
         user = instance
+        request = context.request
+
+        # TODO: if identifiers updated
+        # - chceck that atleast one exist
+        # set as non confirmed
+        # - run verification
 
         # update credential fields with initial values only
         if user.phone:
@@ -65,6 +43,16 @@ class UserSerializer(serializers.ModelSerializer):
 
         if user.email:
             validated_data.pop('email', None)
+
+        phone_old = user.phone
+        email_old = user.email
+
+        user = serializer.save()
+
+        if user.phone is not phone_old:
+            user.verify_phone(request)
+        if user.email is not email_old:
+            user.verify_email(request)
 
         # sample
         # if user.is_custom_user:

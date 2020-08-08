@@ -11,7 +11,7 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin, TOKEN_EXPIRY
+from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 try:
@@ -85,10 +85,12 @@ class EmailDevice(AbstractDevice):
                     is_html=self._template_body_is_html,
                 ).send()
 
+        return token
+
     @classmethod
     def verify_key(cls, key):
         try:
-            email = signing.loads(key, max_age=TOKEN_EXPIRY, salt=settings.SECRET_KEY)
+            email = signing.loads(key, max_age=PASSCODE_EXPIRY, salt=settings.SECRET_KEY)
             device = EmailDevice.objects.get(email=email)
 
         except (signing.SignatureExpired, signing.BadSignature, EmailDevice.DoesNotExist):

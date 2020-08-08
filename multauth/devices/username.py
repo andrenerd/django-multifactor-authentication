@@ -6,7 +6,7 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin, TOKEN_EXPIRY
+from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 DEBUG = getattr(settings, 'DEBUG', False)

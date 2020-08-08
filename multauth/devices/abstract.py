@@ -8,8 +8,9 @@ from django_otp.util import hex_validator, random_hex
 from django_otp.models import Device
 
 
-TOKEN_LENGTH = getattr(settings, 'MULTAUTH_TOKEN_LENGTH', 6) # 6 digits
-TOKEN_EXPIRY = getattr(settings, 'MULTAUTH_TOKEN_EXPIRY', 3600 * 24 * 3) # 3 days
+# TODO: apply passcode_expiry
+PASSCODE_LENGTH = getattr(settings, 'MULTAUTH_PASSCODE_LENGTH', 6) # 6 digits
+PASSCODE_EXPIRY = getattr(settings, 'MULTAUTH_PASSCODE_EXPIRY', 3600 * 24 * 3) # 3 days
 
 
 def key_validator(*args, **kwargs):
@@ -21,7 +22,7 @@ def key_validator(*args, **kwargs):
 
 class AbstractDevice(Device):
     """
-    Device token, one-time password, is used under "name" passcode.
+    Device token, or one-time password, is used under name "passcode".
     To not mess it with authorization token.
     (term "token" is derived from device_otp package and kept for Devices)
     """
@@ -50,7 +51,7 @@ class AbstractDevice(Device):
         return unhexlify(self.key.encode())
 
     def get_token(self):
-        return str(totp(self.bin_key, digits=TOKEN_LENGTH)).zfill(TOKEN_LENGTH)
+        return str(totp(self.bin_key, digits=PASSCODE_LENGTH)).zfill(PASSCODE_LENGTH)
 
     def verify_token(self, token):
         try:
@@ -59,7 +60,7 @@ class AbstractDevice(Device):
             return False
 
         for drift in range(-5, 1):
-            if totp(self.bin_key, drift=drift, digits=TOKEN_LENGTH) == token:
+            if totp(self.bin_key, drift=drift, digits=PASSCODE_LENGTH) == token:
                 return True
 
         return False

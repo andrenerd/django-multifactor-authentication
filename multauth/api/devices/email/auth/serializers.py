@@ -19,7 +19,7 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_email_token(data.get('token')):
-            user.is_email_verified = True
+            user.is_email_confirmed = True
             user.is_active = True
             user.save()
 
@@ -38,12 +38,12 @@ class SignupVerificationEmailKeySerializer(serializers.Serializer):
         user = get_user_model().verify_email_key(data['key'])
 
         if user:
-            if not user.is_email_verified:
+            if not user.is_email_confirmed:
                 # experimental / weak
-                if not user.is_phone_verified:
+                if not user.is_phone_confirmed:
                     user.is_active = True
 
-                user.is_email_verified = True
+                user.is_email_confirmed = True
                 user.save()
 
             data['user'] = user
@@ -61,7 +61,7 @@ class SignupVerificationUserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = (
             'phone', 'email',
-            'is_phone_verified', 'is_email_verified',
+            'is_phone_confirmed', 'is_email_confirmed',
             'is_active',
         )
 

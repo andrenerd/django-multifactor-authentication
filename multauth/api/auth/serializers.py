@@ -5,6 +5,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import exceptions, serializers
 
 UserModel = get_user_model()
+IDENTIFIERS = list(UserModel.IDENTIFIERS)
+SECRETS = list(UserModel.SECRETS)
+SECRETS_WITHOUT_PASSCODE = [x for x in SECRETS if x != 'passcode']
 
 
 __all__ = (
@@ -16,10 +19,6 @@ __all__ = (
 
     'TokenSerializer',
 )
-
-IDENTIFIERS = list(UserModel.IDENTIFIERS)
-SECRETS = list(UserModel.SECRETS)
-SECRETS_WITHOUT_PASSCODE = [x for x in SECRETS if x != 'passcode']
 
 
 class TokenSerializer(serializers.Serializer):
