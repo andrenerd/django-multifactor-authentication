@@ -55,12 +55,12 @@ class EmailDevice(AbstractDevice):
         return hash((self.email,))
 
     def generate_challenge(self, request=None):
-        token = self.get_token()
+        self.generate_token()
         key = signing.dumps(self.email, salt=settings.SECRET_KEY) # for verification url only
         path = reverse(MULTAUTH_VERIFICATION_VIEWNAME, args=[key]) # yes, key. not token
 
         if MULTAUTH_DEBUG:
-            print('Fake auth message, email: %s, token: %s ' % (self.email, token))
+            print('Fake auth message, email: %s, token: %s ' % (self.email, self.token))
 
         # TODO: think to replace: "request.scheme or 'http"
         else:
@@ -71,7 +71,7 @@ class EmailDevice(AbstractDevice):
                         '://' + str(get_current_site(request)) +
                         path
                     ) if request else None,
-                'token': token,
+                'token': self.token,
             }
 
             subject = self._render_subject(context)
@@ -85,7 +85,7 @@ class EmailDevice(AbstractDevice):
                     is_html=self._template_body_is_html,
                 ).send()
 
-        return token
+        return self.token
 
     @classmethod
     def verify_key(cls, key):

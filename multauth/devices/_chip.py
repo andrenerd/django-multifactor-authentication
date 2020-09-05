@@ -43,14 +43,14 @@ class ChipDevice(AbstractDevice):
         return hash((self.chip,))
 
     def generate_challenge(self, request=None):
-        token = self.get_token()
+        self.generate_token()
 
         if MULTAUTH_DEBUG:
-            print('Fake auth message, chip: %s, token: %s ' % (self.email, token))
+            print('Fake auth message, chip: %s, token: %s ' % (self.email, self.token))
 
         else:
             context = {
-                'token': token,
+                'token': self.token,
             }
 
             pass
