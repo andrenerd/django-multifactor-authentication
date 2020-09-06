@@ -84,6 +84,7 @@ class SignupView(views.APIView):
 
         # send verification request
         # to all the unverified devices
+        # TODO: add settings. make it step optional
         user.verify(request)
 
         # let's (re)create token

@@ -20,6 +20,7 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_PHONE_CONFIRMED', True)
 MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME', 'phone')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
@@ -28,9 +29,9 @@ TEMPLATE_MESSAGE_SUFFIX = '.txt'
 class PhoneDevice(AbstractDevice):
     """
     Could be also called as SmsDevice
-
     """
     phone = PhoneNumberField(unique=True)
+    confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
     hardcode = models.CharField(max_length=128) # experimental
     # TODO: make it optional or ?
     pushcode = models.CharField(max_length=256, blank=True, null=True, unique=True, editable=False)

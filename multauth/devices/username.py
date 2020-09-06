@@ -14,7 +14,6 @@ MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 
 
 class UsernameDevice(AbstractDevice):
-
     username = models.CharField(max_length=150, unique=True)
     # reserved # hardcode = models.CharField(max_length=128) # experimental
 
@@ -39,9 +38,7 @@ class UsernameDevice(AbstractDevice):
 
 
 class UsernameUserMixin(AbstractUserMixin):
-
     username_validator = UnicodeUsernameValidator()
-
     username = models.CharField(_('Username'), max_length=150, blank=True, null=True, unique=True, # editable=False
         help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
         validators=[username_validator],

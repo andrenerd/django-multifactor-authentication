@@ -23,6 +23,7 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_EMAIL_CONFIRMED', True)
 MULTAUTH_TEMPLATE_NAME = getattr(settings, 
     'MULTAUTH_DEVICE_EMAIL_TEMPLATE_NAME', 'email'
 )
@@ -36,9 +37,10 @@ TEMPLATE_BODY_SUFFIX = '_body.txt'
 TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
+# TODO: reset token when "confirmed" updated?
 class EmailDevice(AbstractDevice):
-
     email = models.EmailField(unique=True)
+    confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
     # reserved # hardcode = models.CharField(max_length=128) # experimental
 
     USER_MIXIN = 'EmailUserMixin'

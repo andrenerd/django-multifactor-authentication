@@ -19,9 +19,11 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_email_token(data.get('token')):
-            user.is_email_confirmed = True
-            user.is_active = True
-            user.save()
+            device = user.get_email_device()
+            device.confirmed = True
+            device.save()
+            # reserved # user.is_active = True
+            # reserved # user.save()
 
         else:
             msg = _('Confirmation code is invalid or expired')
@@ -39,12 +41,11 @@ class SignupVerificationEmailKeySerializer(serializers.Serializer):
 
         if user:
             if not user.is_email_confirmed:
-                # experimental / weak
-                if not user.is_phone_confirmed:
-                    user.is_active = True
-
-                user.is_email_confirmed = True
-                user.save()
+                device = user.get_email_device()
+                device.confirmed = True
+                device.save()
+                # reserved # user.is_active = True
+                # reserved # user.save()
 
             data['user'] = user
 

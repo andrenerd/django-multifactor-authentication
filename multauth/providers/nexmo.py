@@ -5,7 +5,7 @@ from .abstract import AbstractProvider
 
 
 # nexmo = Client(
-#     getattr(settings, 'MULTAUTH_PROVIDER_NEXMO_ACCOUNT_SID', None),
+#     getattr(settings, 'MULTAUTH_PROVIDER_NEXMO_ACCOUNT_SID', None)
 #     getattr(settings, 'MULTAUTH_PROVIDER_NEXMO_AUTH_TOKEN', None)
 # )
 
