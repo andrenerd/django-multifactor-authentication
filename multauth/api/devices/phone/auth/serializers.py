@@ -17,9 +17,11 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_phone_token(data.get('token')):
+            device = user.get_phone_device()
+            device.confirmed = True
+            device.save()
             # reserved # user.is_active = True
-            user.is_phone_confirmed = True
-            user.save()
+            # reserved # user.save()
 
         else:
             raise serializers.ValidationError(_('Confirmation code is invalid or expired'))

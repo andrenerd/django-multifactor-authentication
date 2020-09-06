@@ -1,9 +1,6 @@
 # Django Multifactor Authentication
 
 
-NB. Alpha version. Deep refactoring will be completed soon.
-
-
 [![pypi version](https://img.shields.io/pypi/v/django-multifactorr-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
 
 
@@ -97,7 +94,7 @@ MULTAUTH_DEVICE_PHONE_CONFIRMED = False
 ```
 
 Non-comfirmed devices will automatically be called for verification (token/key to be sent) on creation or idenfier updates. To invoke verification manually, call api endpoints:
-- `signup-verification`
+- `multauth:signup-verification`
 
 or model methods:
 - `user.verify` for all non-confirmed devices
@@ -106,9 +103,9 @@ or model methods:
 - ...
 
 And to complete verification process call api endpoints:
-- `signup-verification-phone` to post the token
-- `signup-verification-email` to post the token
-- `signup-verification-email-key` as a classic in-email link to pass the key
+- `multauth:signup-verification-phone` to post the token
+- `multauth:signup-verification-email` to post the token
+- `multauth:signup-verification-email-key` as a classic in-email link to pass the key
 - ...
 
 or model methods:

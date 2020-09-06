@@ -37,6 +37,7 @@ TEMPLATE_BODY_SUFFIX = '_body.txt'
 TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
+# TODO: reset token when "confirmed" updated?
 class EmailDevice(AbstractDevice):
     email = models.EmailField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent

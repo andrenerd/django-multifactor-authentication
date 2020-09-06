@@ -1,5 +1,7 @@
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from django.shortcuts import redirect
+from django.conf import settings
 
 from rest_framework import exceptions, parsers, views, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
