@@ -12,7 +12,7 @@ from django.conf import settings
 from .managers import UserManager
 from .mixins import UserDevicesMixin
 
-
+# TODO: add MULTAUTH_ACTIVATED, as default 'is_active' field value
 # RESERVED # PASSWORD, PASSCODE, HARDCODE = 'password', 'passcode', 'hardcode'
 PASSCODE_DEVICE = getattr(settings, 'MULTAUTH_PASSCODE_DEVICE', None);
 SECRETS = tuple(getattr(settings, 'MULTAUTH_SECRETS', (
@@ -45,7 +45,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     REQUIRED_FIELDS = [] # TODO: think about it
     SECRETS = SECRETS
 
-    # TODO" automatically create and update Device information when
+    # TODO: automatically create and update Device information when
     # corresponding user fields are affected
 
     class Meta:
@@ -74,7 +74,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
 
         # reserved
         # if not device or not device.is_interactive:
-        #     raise self.__class__.ObjectDoesNotExist('No interactive device found')
+        #     raise self.__class__.DoesNotExist('No interactive device found')
 
         return device.generate_challenge()
 
@@ -89,14 +89,14 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     # TODO: how about to make device required
     def set_hardcode(self, raw_hardcode, device=None):
         if not user.pk:
-            raise self.__class__.ObjectDoesNotExist('User should be saved, before setting hardcode')
+            raise self.__class__.DoesNotExist('User should be saved, before setting hardcode')
 
         if not device:
             devices = [x for x in self.get_devices() if hasattr(x, 'hardcode')]
             device = devices[0] if devices else None
 
         if not device or not device.has_hardcode:
-            raise self.__class__.ObjectDoesNotExist('No device having hardcode found')
+            raise self.__class__.DoesNotExist('No device having hardcode found')
 
         device.set_hardcode(raw_hardcode)
 
@@ -106,7 +106,7 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
             device = devices[0] if devices else None
 
         if not device or not device.has_hardcode:
-            raise self.__class__.ObjectDoesNotExist('No device having hardcode found')
+            raise self.__class__.DoesNotExist('No device having hardcode found')
 
         return device.check_hardcode(raw_hardcode)
 

@@ -19,8 +19,8 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_email_token(data.get('token')):
+            # reserved # user.is_active = True
             user.is_email_confirmed = True
-            user.is_active = True
             user.save()
 
         else:
@@ -39,10 +39,7 @@ class SignupVerificationEmailKeySerializer(serializers.Serializer):
 
         if user:
             if not user.is_email_confirmed:
-                # experimental / weak
-                if not user.is_phone_confirmed:
-                    user.is_active = True
-
+                # reserved # user.is_active = True
                 user.is_email_confirmed = True
                 user.save()
 

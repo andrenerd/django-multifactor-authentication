@@ -52,12 +52,10 @@ mixin_meta_options = {
     # reserved # 'constraints': ... probably
 }
 
-# experimental
 @classmethod
 def mixin_get_device_classes(cls):
     return list(DEVICES)
 
-# experimental
 @classmethod
 def mixin_get_device_class_by_identifier(cls, identifier):
     if identifier not in mixin_identifiers:
@@ -65,7 +63,7 @@ def mixin_get_device_class_by_identifier(cls, identifier):
 
     return DEVICES[mixin_identifiers.index(identifier)]
 
-# TOOD: add similar "pre_save" handler to update devices on identifiers updates
+# TODO: add similar "pre_save" handler to update devices on identifiers updates
 @classmethod
 def mixin_post_save(cls, sender, instance, created, *args, **kwargs):
     """
@@ -85,8 +83,8 @@ def mixin_post_save(cls, sender, instance, created, *args, **kwargs):
             **{identifier: getattr(user, identifier)}
         )
 
-# experimental
-def mixin_get_devices(self, confirmed=True):
+
+def mixin_get_devices(self, confirmed=None):
     # to think: can be sorted by order in the settings
     return devices_for_user(self, confirmed)
 

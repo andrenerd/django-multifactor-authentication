@@ -34,10 +34,6 @@ AUTHENTICATION_BACKENDS = (
     # ...etc
 )
 
-MULTAUTH_DEBUG = True # False by default
-MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
-MULTAUTH_PASSCODE_EXPIRY = 3600 * 24 * 3 # time in seconds
-
 MULTAUTH_FLOWS = (
     ('phone', 'hardcode', 'passcode',),
     ('email', 'password', 'passcode',),
@@ -57,6 +53,10 @@ MULTAUTH_DEVICES = [
   PhoneDevice,
 ] # by default
 
+MULTAUTH_DEBUG = True # False by default
+MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
+MULTAUTH_PASSCODE_EXPIRY = 3600 # time in seconds
+
 MULTAUTH_DEVICE_EMAIL_PROVIDER = 'mail' # by default
 MULTAUTH_DEVICE_PHONE_PROVIDER = 'twilio' # by default
 
@@ -72,4 +72,49 @@ MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID = 'SID'
 MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN = 'TOKEN'
 MULTAUTH_PROVIDER_TWILIO_CALLER_ID = 'CALLER_ID'
 ```
+
+
+
+### Usage more
+
+Custom use cases and how to config or code them.
+
+
+#### User activation
+
+Users are set as "active" on creation.
+This behavior is not managed by settings for now (check for further updates).
+
+
+#### Devices verification
+
+By default all devices are set as "confirmed" on creation.
+To change this behavior extra settings should be added, for example:  
+```
+MULTAUTH_DEVICE_EMAIL_CONFIRMED = False
+MULTAUTH_DEVICE_PHONE_CONFIRMED = False
+...
+```
+
+Non-comfirmed devices will automatically be called for verification (token/key to be sent) on creation or idenfier updates. To invoke verification manually, call api endpoints:
+- `signup-verification`
+
+or model methods:
+- `user.verify` for all non-confirmed devices
+- `user.verify_email` for email
+- `user.verify_phone` for phone
+- ...
+
+And to complete verification process call api endpoints:
+- `signup-verification-phone` to post the token
+- `signup-verification-email` to post the token
+- `signup-verification-email-key` as a classic in-email link to pass the key
+- ...
+
+or model methods:
+- `user.verify_phone_token`
+- `user.verify_email_token`
+- `user.verify_email_key`
+- ...
+
 

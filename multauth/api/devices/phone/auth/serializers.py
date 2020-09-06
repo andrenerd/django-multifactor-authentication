@@ -17,7 +17,8 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_phone_token(data.get('token')):
-            user.is_active = True
+            # reserved # user.is_active = True
+            user.is_phone_confirmed = True
             user.save()
 
         else:

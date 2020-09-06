@@ -13,11 +13,6 @@ PASSCODE_EXPIRY = getattr(settings, 'MULTAUTH_PASSCODE_EXPIRY', 3600) # n secs
 
 
 class AbstractDevice(SideChannelDevice):
-    """
-    Device token, or one-time password, is used under name "passcode".
-    To not mess it with authorization token.
-    (term "token" is derived from device_otp package and kept for Devices)
-    """
     USER_MIXIN = None # required
     IDENTIFIER_FIELD = None # required
 
@@ -32,6 +27,11 @@ class AbstractDevice(SideChannelDevice):
     #   raise NotImplementedError
 
     def generate_token(self, length=PASSCODE_LENGTH, valid_secs=PASSCODE_EXPIRY):
+        """
+        Device token, or one-time password, is used under name "passcode".
+        To not mess it with authorization token.
+        (term "token" is derived from device_otp package and kept for Devices)
+        """
         super().generate_token(length, valid_secs)
 
     @property
