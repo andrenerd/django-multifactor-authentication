@@ -52,14 +52,14 @@ class PhoneDevice(AbstractDevice):
         super().clean()
 
     def generate_challenge(self, request=None):
-        token = self.get_token()
+        self.generate_token()
 
         if MULTAUTH_DEBUG:
-            print('Fake auth message, phone: %s, token: %s ' % (self.phone, token))
+            print('Fake auth message, phone: %s, token: %s ' % (self.phone, self.token))
 
         else:
             context = {
-                'token': token,
+                'token': self.token,
             }
 
             message = self._render_message(context)
@@ -70,7 +70,7 @@ class PhoneDevice(AbstractDevice):
                     message=message,
                 ).send()
 
-        return token
+        return self.token
 
     def _render_message(self, context):
         if hasattr(self, '_template_message'):

@@ -5,34 +5,19 @@ from django.conf import settings
 
 from django_otp.oath import totp
 from django_otp.util import hex_validator, random_hex
-from django_otp.models import Device
+from django_otp.models import SideChannelDevice
 
 
-# TODO: apply passcode_expiry
-PASSCODE_LENGTH = getattr(settings, 'MULTAUTH_PASSCODE_LENGTH', 6) # 6 digits
-PASSCODE_EXPIRY = getattr(settings, 'MULTAUTH_PASSCODE_EXPIRY', 3600 * 24 * 3) # 3 days
+PASSCODE_LENGTH = getattr(settings, 'MULTAUTH_PASSCODE_LENGTH', 6) # n digits
+PASSCODE_EXPIRY = getattr(settings, 'MULTAUTH_PASSCODE_EXPIRY', 3600) # n secs
 
 
-def key_validator(*args, **kwargs):
-    """
-    Just a wrapper
-    """
-    return hex_validator()(*args, **kwargs)
-
-
-class AbstractDevice(Device):
+class AbstractDevice(SideChannelDevice):
     """
     Device token, or one-time password, is used under name "passcode".
     To not mess it with authorization token.
     (term "token" is derived from device_otp package and kept for Devices)
     """
-    key = models.CharField(
-        max_length=40,
-        validators=[key_validator],
-        default=random_hex,
-        help_text='Hex-encoded secret key'
-    )
-
     USER_MIXIN = None # required
     IDENTIFIER_FIELD = None # required
 
@@ -46,24 +31,8 @@ class AbstractDevice(Device):
     # def __str__(self):
     #   raise NotImplementedError
 
-    @property
-    def bin_key(self):
-        return unhexlify(self.key.encode())
-
-    def get_token(self):
-        return str(totp(self.bin_key, digits=PASSCODE_LENGTH)).zfill(PASSCODE_LENGTH)
-
-    def verify_token(self, token):
-        try:
-            token = int(token)
-        except ValueError:
-            return False
-
-        for drift in range(-5, 1):
-            if totp(self.bin_key, drift=drift, digits=PASSCODE_LENGTH) == token:
-                return True
-
-        return False
+    def generate_token(self, length=PASSCODE_LENGTH, valid_secs=PASSCODE_EXPIRY):
+        super().generate_token(length, valid_secs)
 
     @property
     def has_hardcode(self):
