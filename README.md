@@ -1,7 +1,7 @@
 # Django Multifactor Authentication
 
 
-[![pypi version](https://img.shields.io/pypi/v/django-multifactorr-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
+[![pypi version](https://img.shields.io/pypi/v/django-multifactor-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
 
 
 Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases. Easily configurable and extendable with new authentication methods or services. Authenticaton scenarios, called `flows`, are based on `identifiers` and `secrets`, which can be used or not used in multiple combinations:

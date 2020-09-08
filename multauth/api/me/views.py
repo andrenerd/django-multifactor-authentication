@@ -47,3 +47,45 @@ class MeView(views.APIView):
 
         serializer = self.serializer_class(user)
         return Response(serializer.data)
+
+
+# TODO: update later... drop passwords comparison
+class MePasswordView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+
+    # @swagger_auto_schema(
+    #     operation_description='Set user password',
+    #     request_body=serializers.UserPasswordSerializer,
+    # )
+    def post(self, request):
+        user = request.user
+        serializer = serializers.UserPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        password = serializer.validated_data.get('password', None)
+        if password:
+            user.set_password()
+            user.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class MePasscodeView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+
+    # @swagger_auto_schema(
+    #     operation_description='Set or check user passcode',
+    #     request_body=serializers.UserPasscodeSerializer,
+    # )
+    def post(self, request):
+        user = request.user
+        serializer = serializers.UserPasscodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        passcode = serializer.validated_data.get('passcode', None)
+        if passcode:
+            user.check_passcode(passcode)
+        else:
+            user.set_passcode()
+
+        return Response(status=status.HTTP_200_OK)

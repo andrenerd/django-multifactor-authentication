@@ -9,6 +9,8 @@ IDENTIFIERS = list(UserModel.IDENTIFIERS)
 
 __all__ = (
     'UserSerializer',
+    'UserPasswordSerializer',
+    'UserPasscodeSerializer',
 )
 
 
@@ -33,10 +35,11 @@ class UserSerializer(serializers.ModelSerializer):
         request = context.request
 
         # TODO: if identifiers updated
-        # - chceck that atleast one exist
+        # - check that at least one exist
         # set as non confirmed
         # - run verification
 
+        # TODO: convert to "for" by IDENTIFIERS
         # update credential fields with initial values only
         if user.phone:
             validated_data.pop('phone', None)
@@ -66,3 +69,13 @@ class UserSerializer(serializers.ModelSerializer):
         #         serializer_custom_user.save()
 
         return super().update(user, validated_data)
+
+
+class UserPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField()
+    # password_old = serializers.CharField()
+
+
+class UserPasscodeSerializer(serializers.Serializer):
+    passcode = serializers.CharField()
+    # passcode_old = serializers.CharField()

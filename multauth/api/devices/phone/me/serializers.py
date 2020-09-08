@@ -4,15 +4,9 @@ from rest_framework import exceptions, serializers
 
 
 __all__ = (
-    'UserPasscodeSerializer',
-    'UserPushcodeSerializer',
+    'UserPhonePushcodeSerializer',
 )
 
 
-class UserPasscodeSerializer(serializers.Serializer):
-    passcode = serializers.CharField()
-    # passcode_old = serializers.CharField()
-
-
-class UserPushcodeSerializer(serializers.Serializer):
+class UserPhonePushcodeSerializer(serializers.Serializer):
     pushcode = serializers.CharField()
