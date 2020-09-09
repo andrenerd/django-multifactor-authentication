@@ -5,8 +5,8 @@ from .auth import views as auth_views
 
 
 urlpatterns = [
-    path('me/passcode/', me_views.MePasscodeView.as_view(), name='me-passcode'),
-    path('me/pushcode/', me_views.MePushcodeView.as_view(), name='me-pushcode'),
+    # path('me/phone/hardcode/', me_views.MeHardcodeView.as_view(), name='me-hardcode'),
+    path('me/phone/pushcode/', me_views.MePhonePushcodeView.as_view(), name='me-pushcode'),
     path('signup/verification/phone/', auth_views.SignupVerificationPhoneView.as_view(), name='signup-verification-phone'),
 ]
 
