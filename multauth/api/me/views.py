@@ -40,10 +40,11 @@ class MeView(views.APIView):
         data = request.data
         user = request.user
 
-        serializer = serializers.UserSerializer(user,
+        serializer = self.serializer_class(user,
             data=data, partial=True, context={'request': request})
 
         serializer.is_valid(raise_exception=True)
+        user = serializer.save()
 
         serializer = self.serializer_class(user)
         return Response(serializer.data)

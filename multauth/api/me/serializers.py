@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'date_joined', 'last_login', 'groups',
         )
 
-    def update(self, instance, validated_data, context):
+    def update(self, instance, validated_data):
         user = instance
 
         # sample
