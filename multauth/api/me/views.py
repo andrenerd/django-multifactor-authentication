@@ -49,7 +49,6 @@ class MeView(views.APIView):
         return Response(serializer.data)
 
 
-# TODO: update later... drop passwords comparison
 class MePasswordView(views.APIView):
     permission_classes = (IsAuthenticated,)
 

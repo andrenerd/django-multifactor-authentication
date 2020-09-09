@@ -63,25 +63,26 @@ def mixin_get_device_class_by_identifier(cls, identifier):
 
     return DEVICES[mixin_identifiers.index(identifier)]
 
-# TODO: add similar "pre_save" handler to update devices on identifiers updates
 @classmethod
-def mixin_post_save(cls, sender, instance, created, *args, **kwargs):
+def mixin_post_save(cls, sender, instance, *args, **kwargs):
     """
-    Create devices for created user
+    Create or update devices
     """
-    if not created:
-        return
-
     user = instance
     identifiers = [x for x in instance.IDENTIFIERS if getattr(instance, x, None)]
 
     for identifier in identifiers:
         device_class = instance.get_device_class_by_identifier(identifier)
 
-        d = device_class.objects.create(
-            user=user,
-            **{identifier: getattr(user, identifier)}
-        )
+        values = {'user': user, identifier: getattr(user, identifier)}
+
+        try:
+            d = device_class.objects.get(**values)
+        except device_class.DoesNotExist:
+            d = None
+
+        if not d:
+            device_class.objects.create(**values)
 
 
 def mixin_get_devices(self, confirmed=None):

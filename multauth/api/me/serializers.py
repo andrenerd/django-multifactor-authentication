@@ -32,30 +32,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data, context):
         user = instance
-        request = context.request
-
-        # TODO: if identifiers updated
-        # - check that at least one exist
-        # set as non confirmed
-        # - run verification
-
-        # TODO: convert to "for" by IDENTIFIERS
-        # update credential fields with initial values only
-        if user.phone:
-            validated_data.pop('phone', None)
-
-        if user.email:
-            validated_data.pop('email', None)
-
-        phone_old = user.phone
-        email_old = user.email
-
-        user = serializer.save()
-
-        if user.phone is not phone_old:
-            user.verify_phone(request)
-        if user.email is not email_old:
-            user.verify_email(request)
 
         # sample
         # if user.is_custom_user:
