@@ -78,7 +78,7 @@ Custom use cases and how to config or code them.
 
 #### APIs
 
-Package contains full set of rest api endpoints, but it's optional. To use it, `djangorestframework>=3.10.3` should be installed and the urls be included:
+Package contains full set of [rest api endpoints](./multauth/api/urls.py), but it's optional. To use it, `djangorestframework>=3.10.3` should be installed and the urls be included:
 ```
 urlpatterns = [
     path(r'^', include('multauth.api.urls')),
