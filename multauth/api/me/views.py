@@ -64,7 +64,7 @@ class MePasswordView(views.APIView):
 
         password = serializer.validated_data.get('password', None)
         if password:
-            user.set_password()
+            user.set_password(password)
             user.save()
 
         return Response(status=status.HTTP_200_OK)

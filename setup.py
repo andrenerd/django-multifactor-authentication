@@ -10,7 +10,7 @@ def read(f):
 
 setup(
     name='django-multifactor-authentication',
-    version='0.9.3',
+    version='0.9.5',
     url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
     description='Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases.',
@@ -21,10 +21,12 @@ setup(
     include_package_data=True,
     install_requires=[
         'django>=2.2, <4.0.0',
-        'djangorestframework>=3.10.3, <4.0.0',
         'phonenumbers>=8.0.0', # required by django-phonenumber-field only
         'django-phonenumber-field>=3.0.1',
         'django_otp>=0.4.3',
+    ],
+    extras_require=[
+        'djangorestframework>=3.10.3, <4.0.0',
     ],
     python_requires='>=3.5',
     zip_safe=False,

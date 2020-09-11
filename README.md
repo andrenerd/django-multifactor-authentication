@@ -71,10 +71,19 @@ MULTAUTH_PROVIDER_TWILIO_CALLER_ID = 'CALLER_ID'
 ```
 
 
-
 ### Usage more
 
 Custom use cases and how to config or code them.
+
+
+#### APIs
+
+Package contains full set of [rest api endpoints](./multauth/api/urls.py), but it's optional. To use it, `djangorestframework>=3.10.3` should be installed and the urls be included:
+```
+urlpatterns = [
+    path(r'^', include('multauth.api.urls')),
+]
+```
 
 
 #### User activation
