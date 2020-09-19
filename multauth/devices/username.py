@@ -36,6 +36,10 @@ class UsernameDevice(AbstractDevice):
     def verify_is_allowed(self):
         return (False, None)
 
+    @property
+    def confirmed(self):
+        return True
+
 
 class UsernameUserMixin(AbstractUserMixin):
     username_validator = UnicodeUsernameValidator()
