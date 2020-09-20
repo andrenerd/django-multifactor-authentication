@@ -14,7 +14,7 @@ def get_url_modules(package):
   for name in device_module_short_names:
       try:
           modules.append(import_module('..' + name + '.urls', package=package))
-      except (ModuleNotFoundError, ImportError):
+      except (ModuleNotFoundError,):
           pass
 
   return modules
