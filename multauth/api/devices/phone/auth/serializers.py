@@ -2,10 +2,12 @@ from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions, serializers
+from multauth.devices import PhoneDevice
 
 
 __all__ = (
     'SignupVerificationPhoneSerializer',
+    'SigninPasscodePhoneSerializer',
 )
 
 
@@ -25,5 +27,24 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
 
         else:
             raise serializers.ValidationError(_('Confirmation code is invalid or expired'))
+
+        return super().validate(data)
+
+
+class SigninPasscodePhoneSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+    hardcode = serializers.CharField(required=False) # mostly required
+
+    def validate(self, data):
+        phone = data.get('phone')
+        hardcode = data.get('hardcode')
+
+        if phone:
+            try:
+                device = PhoneDevice.objects.get(phone=phone)
+                if not hardcode or device.check_hardcode(hardcode):
+                    device.generate_challenge()
+            except PhoneDevice.DoesNotExist:
+                pass
 
         return super().validate(data)

@@ -32,3 +32,14 @@ class SignupVerificationPhoneView(views.APIView):
 
         serializer = auth_serializers.SignupVerificationUserSerializer(user)
         return Response(serializer.data)
+
+
+class SigninPasscodePhoneView(views.APIView):
+    # @swagger_auto_schema(
+    #     operation_description='Send signin passcode to device:phone',
+    #     request_body=serializers.SigninPasscodePhoneSerializer,
+    # )
+    def post(self, request):
+        serializer = serializers.SigninPasscodePhoneSerializer(data=request.data)
+        serializer.is_valid(raise_exception=False) # no exceptions here
+        return Response(status=status.HTTP_200_OK)

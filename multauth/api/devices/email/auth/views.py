@@ -55,3 +55,14 @@ class SignupVerificationEmailKeyView(views.APIView):
 
         MULTAUTH_EMAIL_REDIRECT = getattr(settings, 'MULTAUTH_EMAIL_REDIRECT', '/')
         return redirect(MULTAUTH_EMAIL_REDIRECT, user=user)
+
+
+class SigninPasscodeEmailView(views.APIView):
+    # @swagger_auto_schema(
+    #     operation_description='Send signin passcode to device:email',
+    #     request_body=serializers.SigninPasscodeEmailSerializer,
+    # )
+    def post(self, request):
+        serializer = serializers.SigninPasscodeEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=False) # no exceptions here
+        return Response(status=status.HTTP_200_OK)

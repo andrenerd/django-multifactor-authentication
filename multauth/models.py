@@ -68,13 +68,10 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     def verify(self, request=None):
         super().verify(request)
 
-    # TODO: how about to make device required
-    def set_passcode(self, device=None):
-        # TODO: apply PASSCODE_DEVICE 
-
-        # reserved
-        # if not device or not device.is_interactive:
-        #     raise self.__class__.DoesNotExist('No interactive device found')
+    def set_passcode(self, device):
+        # TODO: think to apply PASSCODE_DEVICE
+        if not device or not device.is_interactive:
+            raise self.__class__.DoesNotExist('No interactive device found')
 
         return device.generate_challenge()
 

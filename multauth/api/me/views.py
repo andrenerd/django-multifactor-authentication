@@ -70,6 +70,7 @@ class MePasswordView(views.APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+# experimental
 class MePasscodeView(views.APIView):
     permission_classes = (IsAuthenticated,)
 

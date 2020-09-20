@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             + ['id', 'first_name', 'last_name']
             + ['date_joined', 'last_login', 'groups']
             + IDENTIFIERS
-            # todo: add "..._confirmed" field for each enabled device
+            + ['is_' + x + '_confirmed' for x in IDENTIFIERS] # ex. ['is_email_confirmed']
         )
 
         read_only_fields = (
