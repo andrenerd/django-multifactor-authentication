@@ -1,3 +1,3 @@
 from .mail import MailProvider
-from .nexmo import NexmoProvider
+from .vonage import VonageProvider
 from .twilio import TwilioProvider

@@ -10,6 +10,7 @@ twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID', None)
 
 # see
 # https://www.twilio.com/docs/libraries/python
+# https://github.com/twilio/twilio-python/
 if TWILIO_ACCOUNT_SID:
     twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 else:
@@ -30,6 +31,9 @@ class TwilioProvider(AbstractProvider):
         self.message = message
         # RESERVED # self.fail_silently = kwargs.get('fail_silently', False)
 
+    # todo:
+    # handle exceptions
+    # https://github.com/twilio/twilio-python/#handling-exceptions
     def _send(self):
         if not self.to:
             return

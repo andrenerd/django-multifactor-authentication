@@ -17,7 +17,7 @@ __all__ = (
     'SignupVerificationUserSerializer',
     # 'ResetSerializer', 'ResetEmailSerializer',
 
-    'TokenSerializer',
+    'TokenSerializer',authenticate
 )
 
 
