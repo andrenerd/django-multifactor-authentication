@@ -1,3 +1,4 @@
+from importlib import import_module
 from django.db import models
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.template.loader import get_template
@@ -12,7 +13,8 @@ from .abstract import AbstractDevice, AbstractUserMixin
 
 
 try:
-    PhoneProvider = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
+    PhoneProviderName = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
+    PhoneProvider = import_module(PhoneProviderName)
 except AttributeError:
     from ..providers.twilio import TwilioProvider
     PhoneProvider = TwilioProvider

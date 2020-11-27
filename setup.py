@@ -10,7 +10,8 @@ def read(f):
 
 setup(
     name='django-multifactor-authentication',
-    version='0.9.5',
+    keywords='django authentication multifactor mfa 2fa 3fa user signin signup twillio sendgrid nexmo sns',
+    version='0.9.7',
     url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
     description='Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases.',
@@ -25,9 +26,9 @@ setup(
         'django-phonenumber-field>=3.0.1',
         'django_otp>=0.4.3',
     ],
-    extras_require=[
-        'djangorestframework>=3.10.3, <4.0.0',
-    ],
+    extras_require={
+        'api': ['djangorestframework>=3.10.3, <4.0.0'],
+    },
     python_requires='>=3.5',
     zip_safe=False,
     classifiers=[

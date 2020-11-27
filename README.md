@@ -10,8 +10,7 @@ Flexible authentication for web, mobile, desktop and hybrid apps. It can be used
 
 and service providers:  
 - Twilio
-- SendGrid (to be specified)
-- Nexmo (to be done)
+- Vonage (Nexmo)
 - Amazon SNS (to be done)
 - ...add yours
 
