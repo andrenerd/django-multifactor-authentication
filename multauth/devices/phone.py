@@ -1,5 +1,5 @@
-from importlib import import_module
 from django.db import models
+from django.utils.module_loading import import_string
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -13,8 +13,8 @@ from .abstract import AbstractDevice, AbstractUserMixin
 
 
 try:
-    PhoneProviderName = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
-    PhoneProvider = import_module(PhoneProviderName)
+    PhoneProviderPath = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
+    PhoneProvider = import_string(PhoneProviderPath) # ex. multauth.providers.VonageProvider
 except AttributeError:
     from ..providers.twilio import TwilioProvider
     PhoneProvider = TwilioProvider
@@ -28,6 +28,7 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME'
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
+# todo: rename to SmsDevice? add VoiceDevice?
 class PhoneDevice(AbstractDevice):
     """
     Could be also called as SmsDevice
