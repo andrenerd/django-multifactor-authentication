@@ -1,5 +1,5 @@
 from django.conf import settings
-from vonage.rest import Client, Sms
+from vonage import Client, Sms
 
 from .abstract import AbstractProvider
 
@@ -11,11 +11,10 @@ vonage_from = getattr(settings, 'MULTAUTH_PROVIDER_VONAGE_BRAND_NAME', None)
 # see
 # https://github.com/vonage/vonage-python-sdk
 if VONAGE_API_KEY:
-    vonage = Client(key=TWILIO_ACCOUNT_SID, secret=TWILIO_AUTH_TOKEN)
-    sms = Sms(client)
+    client = Client(key=VONAGE_API_KEY, secret=VONAGE_API_SECRET)
 else:
     print('Vonage: running in mock mode. Set "account sid" and other params.')
-    vonage = None
+    client = None
 
 
 class VonageProvider(AbstractProvider):
@@ -35,11 +34,16 @@ class VonageProvider(AbstractProvider):
         if not self.to:
             return
 
-        if vonage:
-            sms.send_message({
+        if client:
+            sms = Sms(client)
+            response = sms.send_message({
                 'to': self.to,
                 'from': vonage_from,
-                'body': self.message,
+                'text': self.message,
             })
+
+            # todo:
+            # catch errors in response
+            # {'message-count': '1', 'messages': [{'status': '2', 'error-text': 'Missing Message Text'}]}
         else:
             print('Vonage: to %s, message "%s"' % (self.to, self.message))

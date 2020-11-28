@@ -12,10 +12,10 @@ twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID', None)
 # https://www.twilio.com/docs/libraries/python
 # https://github.com/twilio/twilio-python/
 if TWILIO_ACCOUNT_SID:
-    twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 else:
     print('Twilio: running in mock mode. Set "account sid" and other params.')
-    twilio = None
+    client = None
 
 
 class TwilioProvider(AbstractProvider):
@@ -38,8 +38,8 @@ class TwilioProvider(AbstractProvider):
         if not self.to:
             return
 
-        if twilio:
-            twilio.messages.create(
+        if client:
+            client.messages.create(
                 to=self.to,
                 from_=twilio_from,
                 body=self.message,

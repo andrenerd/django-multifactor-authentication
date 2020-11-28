@@ -1,7 +1,7 @@
 from django.db import models
 from django.core import signing
 from django.urls import reverse
-# RESERVED # from django.urls.exceptions import NoReverseMatch
+from django.utils.module_loading import import_string
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
@@ -15,7 +15,9 @@ from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 try:
-    EmailProvider = settings.MULTAUTH_DEVICE_EMAIL_PROVIDER
+    EmailProviderPath = settings.MULTAUTH_DEVICE_EMAIL_PROVIDER
+    EmailProvider = import_string(EmailProviderPath) # ex. multauth.providers.MailProvider
+
 except AttributeError:
     from ..providers.mail import MailProvider
     EmailProvider = MailProvider
