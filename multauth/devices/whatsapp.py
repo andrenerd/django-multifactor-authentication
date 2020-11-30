@@ -12,44 +12,39 @@ from .abstract import AbstractDevice, AbstractUserMixin
 
 
 try:
-    PhoneProviderPath = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
-    PhoneProvider = import_string(PhoneProviderPath) # ex. multauth.providers.VonageProvider
+    WhatsappProviderPath = settings.MULTAUTH_DEVICE_WHATSAPP_PROVIDER
+    WhatsappProvider = import_string(WhatsappProviderPath) # ex. multauth.providers.VonageProvider
 except AttributeError:
     from ..providers.twilio import TwilioProvider
-    PhoneProvider = TwilioProvider
+    WhatsappProvider = TwilioProvider
 
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_PHONE_CONFIRMED', True)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME', 'phone')
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_WHATSAPP_CONFIRMED', True)
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_WHATSAPP_TEMPLATE_NAME', 'whatsapp')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class PhoneDevice(AbstractDevice):
-    """
-    Could be also called as SmsDevice
-    # todo: rename to SmsDevice? add VoiceDevice? No!
-    """
-    phone = PhoneNumberField(unique=True)
+class WhatsappDevice(AbstractDevice):
+    whatsapp = PhoneNumberField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
-    hardcode = models.CharField(max_length=128) # experimental
     # TODO: make it optional or ?
     pushcode = models.CharField(max_length=256, blank=True, null=True, unique=True, editable=False)
 
-    USER_MIXIN = 'PhoneUserMixin'
-    IDENTIFIER_FIELD = 'phone'
+    USER_MIXIN = 'WhatsappUserMixin'
+    IDENTIFIER_FIELD = 'whatsapp'
 
     def __eq__(self, other):
-        if not isinstance(other, PhoneDevice):
+        if not isinstance(other, WhatsappDevice):
             return False
 
-        return self.phone == other.phone \
+        return self.whatsapp == other.whatsapp \
             and self.key == other.key
 
     def __hash__(self):
-        return hash((self.phone,))
+        return hash((self.whatsapp,))
 
     def clean(self):
         super().clean()
@@ -58,7 +53,7 @@ class PhoneDevice(AbstractDevice):
         self.generate_token()
 
         if MULTAUTH_DEBUG:
-            print('Fake auth message, phone: %s, token: %s ' % (self.phone, self.token))
+            print('Fake auth message, whatsapp: %s, token: %s ' % (self.whatsapp, self.token))
 
         else:
             context = {
@@ -68,8 +63,8 @@ class PhoneDevice(AbstractDevice):
             message = self._render_message(context)
 
             if message:
-                PhoneProvider(
-                    to=self.phone.as_e164,
+                WhatsappProvider(
+                    to=self.whatsapp.as_e164,
                     message=message,
                 ).send()
 
@@ -96,12 +91,12 @@ class PhoneDevice(AbstractDevice):
             return None
 
 
-class PhoneUserMixin(AbstractUserMixin):
+class WhatsappUserMixin(AbstractUserMixin):
 
-    phone = PhoneNumberField(_('Phone number'), blank=True, null=True, unique=True,
+    whatsapp = WhatsappNumberField(_('WhatsApp identifier'), blank=True, null=True, unique=True,
         # help_text = _('Required.'),
         error_messages = {
-            'unique': _('A user with that phone number already exists.'),
+            'unique': _('A user with that WhatsApp identifier already exists.'),
         }
     )
 
@@ -109,32 +104,32 @@ class PhoneUserMixin(AbstractUserMixin):
         abstract = True
 
     def __str__(self):
-        return str(getattr(self, 'phone', ''))
+        return str(getattr(self, 'whatsapp', ''))
 
     @property
-    def is_phone_confirmed(self):
-        device = self.get_phone_device()
+    def is_whatsapp_confirmed(self):
+        device = self.get_whatsapp_device()
         return device.confirmed if device else False
 
-    def get_phone_device(self):
-        phone = getattr(self, 'phone', None)
+    def get_whatsapp_device(self):
+        whatsapp = getattr(self, 'whatsapp', None)
 
         try:
-            device = PhoneDevice.objects.get(user=self, phone=phone)
-        except PhoneDevice.DoesNotExist:
+            device = WhatsappDevice.objects.get(user=self, whatsapp=whatsapp)
+        except WhatsappDevice.DoesNotExist:
             device = None
 
         return device
 
-    def verify_phone(self, request=None):
-        if getattr(self, 'phone', None):
-            device = self.get_phone_device()
+    def verify_whatsapp(self, request=None):
+        if getattr(self, 'whatsapp', None):
+            device = self.get_whatsapp_device()
 
             if not device:
-                device = PhoneDevice(
+                device = WhatsappDevice(
                     user=self,
                     name='default', # temporal
-                    phone=self.phone,
+                    whatsapp=self.whatsapp,
                     key=random_hex(20), # OBSOLETED: .decode('ascii'),
                     confirmed=False,
                 )
@@ -144,9 +139,9 @@ class PhoneUserMixin(AbstractUserMixin):
             device.generate_challenge(request)
             return device
 
-    def verify_phone_token(self, token):
-        if getattr(self, 'phone', None):
-            device = self.get_phone_device()
+    def verify_whatsapp_token(self, token):
+        if getattr(self, 'whatsapp', None):
+            device = self.get_whatsapp_device()
 
             if not device:
                 return False
@@ -156,5 +151,5 @@ class PhoneUserMixin(AbstractUserMixin):
     def verify(self, request=None):
         super().verify(request)
 
-        if self.phone and not self.is_phone_confirmed:
-            self.verify_phone(request)
+        if self.whatsapp and not self.is_whatsapp_confirmed:
+            self.verify_whatsapp(request)
