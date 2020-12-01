@@ -7,6 +7,7 @@ from .abstract import AbstractProvider
 TWILIO_ACCOUNT_SID = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_ACCOUNT_SID', None)
 TWILIO_AUTH_TOKEN = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_AUTH_TOKEN', None)
 twilio_from = getattr(settings, 'MULTAUTH_PROVIDER_TWILIO_CALLER_ID', None)
+twilio_whatsapp_prefix = 'whatsapp:'
 
 # see
 # https://www.twilio.com/docs/libraries/python
@@ -38,10 +39,16 @@ class TwilioProvider(AbstractProvider):
         if not self.to:
             return
 
+        # experimental
+        if self.to.startswith(twilio_whatsapp_prefix): 
+            from_ = twilio_whatsapp_prefix + twilio_from
+        else:
+            from_ = twilio_from
+
         if client:
             client.messages.create(
                 to=self.to,
-                from_=twilio_from,
+                from_=from_,
                 body=self.message,
             )
         else:

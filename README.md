@@ -8,10 +8,18 @@ Flexible authentication for web, mobile, desktop and hybrid apps. It can be used
 - username, email, phone, ...
 - password, passcode (one-time pass or token), hardcode (device or card id), ...
 
+Full list of supported services and corresponding identifiers:
+- Email
+- Phone (as Sms)
+- GoogleAuthentication (soon)
+- Yubikey (soon)
+- Whatsapp
+- ...add yours
+
 and service providers:  
 - Twilio
 - Vonage (Nexmo)
-- Amazon SNS (to be done)
+- Amazon SNS (soon)
 - ...add yours
 
 
@@ -44,14 +52,15 @@ Extra settings (optional):
 (see built-in [devices](./multauth/devices), [providers](./multauth/providers) and [templates](./multauth/templates))  
 ```
 MULTAUTH_DEVICES = [
-  UsernameDevice,
-  EmailDevice,
-  PhoneDevice,
+  'multauth.devices.UsernameDevice',
+  'multauth.devices.EmailDevice',
+  'multauth.devices.PhoneDevice',
 ] # by default
 
 MULTAUTH_DEBUG = True # False by default
 MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
 MULTAUTH_PASSCODE_EXPIRY = 3600 # time in seconds
+MULTAUTH_PASSCODE_DEVICE = 'multauth.devices.PhoneDevice' # by default
 
 MULTAUTH_DEVICE_EMAIL_PROVIDER = 'multauth.providers.MailProvider' # by default
 MULTAUTH_DEVICE_PHONE_PROVIDER = 'multauth.providers.TwilioProvider' # by default

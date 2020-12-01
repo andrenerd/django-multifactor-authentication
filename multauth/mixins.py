@@ -3,6 +3,7 @@ from importlib import import_module
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils.translation import gettext_lazy as _
+from django.utils.module_loading import import_string
 from django.conf import settings
 from django_otp import devices_for_user
 
@@ -14,12 +15,11 @@ from .decorators import (
 )
 
 
-DEVICES = tuple(getattr(settings, 'MULTAUTH_DEVICES', [
-    UsernameDevice,
-    EmailDevice,
-    PhoneDevice,
-]));
-
+DEVICES = tuple(import_string(d) for d in tuple(getattr(settings, 'MULTAUTH_DEVICES', [
+    'multauth.devices.UsernameDevice',
+    'multauth.devices.EmailDevice',
+    'multauth.devices.PhoneDevice',
+])));
 
 mixin_classes = tuple(
     getattr(import_module(d.__module__), d.USER_MIXIN) for d in DEVICES
