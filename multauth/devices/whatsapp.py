@@ -64,7 +64,7 @@ class WhatsappDevice(AbstractDevice):
 
             if message:
                 WhatsappProvider(
-                    to=self.whatsapp.as_e164,
+                    to='whatsapp:' + self.whatsapp.as_e164,
                     message=message,
                 ).send()
 
@@ -93,7 +93,7 @@ class WhatsappDevice(AbstractDevice):
 
 class WhatsappUserMixin(AbstractUserMixin):
 
-    whatsapp = WhatsappNumberField(_('WhatsApp identifier'), blank=True, null=True, unique=True,
+    whatsapp = PhoneNumberField(_('WhatsApp identifier'), blank=True, null=True, unique=True,
         # help_text = _('Required.'),
         error_messages = {
             'unique': _('A user with that WhatsApp identifier already exists.'),

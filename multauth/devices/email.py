@@ -17,7 +17,6 @@ from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
 try:
     EmailProviderPath = settings.MULTAUTH_DEVICE_EMAIL_PROVIDER
     EmailProvider = import_string(EmailProviderPath) # ex. multauth.providers.MailProvider
-
 except AttributeError:
     from ..providers.mail import MailProvider
     EmailProvider = MailProvider
