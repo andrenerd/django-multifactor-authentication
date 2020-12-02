@@ -13,7 +13,7 @@ Full list of supported services and corresponding identifiers:
 - Phone (as Sms)
 - GoogleAuthentication (soon)
 - Yubikey (soon)
-- Whatsapp
+- WhatsApp
 - ...add yours
 
 and service providers:  

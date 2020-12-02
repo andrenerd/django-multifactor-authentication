@@ -39,13 +39,13 @@ class TwilioProvider(AbstractProvider):
         if not self.to:
             return
 
-        # experimental
-        if self.to.startswith(twilio_whatsapp_prefix): 
-            from_ = twilio_whatsapp_prefix + twilio_from
-        else:
-            from_ = twilio_from
-
         if client:
+            # experimental
+            if self.to.startswith(twilio_whatsapp_prefix): 
+                from_ = twilio_whatsapp_prefix + twilio_from
+            else:
+                from_ = twilio_from
+
             client.messages.create(
                 to=self.to,
                 from_=from_,
