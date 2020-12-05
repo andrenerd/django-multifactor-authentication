@@ -8,7 +8,7 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin
+from .abstract import AbstractSideChannelDevice, AbstractUserMixin
 
 
 try:
@@ -27,7 +27,7 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_WHATSAPP_TEMPLATE_NA
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class WhatsappDevice(AbstractDevice):
+class WhatsappDevice(AbstractSideChannelDevice):
     whatsapp = PhoneNumberField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
     # TODO: make it optional or ?
