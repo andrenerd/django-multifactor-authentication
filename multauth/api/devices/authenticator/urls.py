@@ -1,0 +1,10 @@
+from django.urls import include, path
+
+from .me import views as me_views
+from .auth import views as auth_views
+
+
+urlpatterns = [
+    path('me/authenticator/key/', me_views.MeAuthenticatorKeyView.as_view(), name='me-authenticator-key'),
+]
+

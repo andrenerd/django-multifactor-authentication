@@ -5,6 +5,7 @@ from rest_framework import exceptions, parsers, views, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from multauth.devices import PhoneDevice
 # from ..permissions import IsCustomUser
 from . import serializers
 

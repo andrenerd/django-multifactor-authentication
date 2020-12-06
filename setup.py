@@ -30,6 +30,7 @@ setup(
         'api': ['djangorestframework>=3.10.3, <4.0.0'],
         'twilio': ['twilio'],
         'vonage': ['vonage'],
+        'authenticator': ['qrcode>=4.0'],
     },
     python_requires='>=3.5',
     zip_safe=False,

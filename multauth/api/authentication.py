@@ -16,8 +16,8 @@ class TokenQueryAuthentication(authentication.TokenAuthentication):
 
 class TokenInactiveAuthentication(authentication.TokenAuthentication):
     """
-    Let to authentication non active users by token
-    Supposed to be used by specific endpoints only (signup, etc) 
+    Let to authenticate non active users by extra tokens (not the main one)
+    Supposed to be used by specific endpoints only (signup, etc)
     """
     def authenticate_credentials(self, key):
         model = self.get_model()
