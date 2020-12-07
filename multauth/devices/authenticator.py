@@ -17,7 +17,7 @@ from django_otp.oath import TOTP
 from .abstract import AbstractDevice, AbstractUserMixin
 
 
-# reserved 
+# reserved
 # try:
 #     AuthenticatorProviderPath = settings.MULTAUTH_DEVICE_AUTHENTICATOR_PROVIDER
 #     AuthenticatorProvider = import_string(AuthenticatorProviderPath) # ex. multauth.providers.GauthenticatorProvider
@@ -28,10 +28,10 @@ from .abstract import AbstractDevice, AbstractUserMixin
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_KEY_LENGTH', 8)
+MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_KEY_LENGTH', 20)
 MULTAUTH_SYNC = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_SYNC', True)
 MULTAUTH_THROTTLE_FACTOR = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_THROTTLE_FACTOR', 1)
-MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_ISSUER', None)
+MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_ISSUER', 'Multauth')
 
 
 # see django_otp.plugins.otp_totp.models.TOTPDevice
@@ -66,6 +66,37 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     def __hash__(self):
         return hash((self.key,))
 
+    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    @property
+    def bin_key(self):
+        return unhexlify(self.key.encode())
+
+    @property
+    def key_b32(self):
+        return b32encode(self.bin_key)
+
+    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    @property
+    def key_uri(self):
+        user = self.user
+        label = quote([str(getattr(user, i)) for i in user.IDENTIFIERS if getattr(user, i)].pop())
+        issuer = quote(str(MULTAUTH_ISSUER).replace(':', ''))
+
+        params = {
+            'secret': self.key_b32, # should go first
+            # 'algorithm': 'SHA1',
+            'digits': self.digits,
+            'period': self.step,
+        }
+        urlencoded_params = urlencode(params)
+
+        if issuer:
+            label = '{}:{}'.format(issuer, label)
+            urlencoded_params += '&issuer={}'.format(quote(issuer))  # encode issuer as per RFC 3986, not quote_plus
+
+        url = 'otpauth://totp/{}?{}'.format(label, urlencoded_params)
+        return url
+
     def clean(self):
         super().clean()
 
@@ -87,34 +118,6 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
             print('Fake auth message, Google Authenticator, token: %s ' % (totp))
 
         return totp
-
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
-    @property
-    def bin_key(self):
-        return unhexlify(self.key.encode())
-
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
-    @property
-    def key_uri(self):
-        issuer = MULTAUTH_ISSUER or self._meta.app_label
-        params = {
-            'secret': b32encode(self.bin_key),
-            'algorithm': 'SHA1',
-            'digits': self.digits,
-            'period': self.step,
-        }
-        urlencoded_params = urlencode(params)
-
-        if callable(issuer):
-            issuer = issuer(self)
-
-        if isinstance(issuer, str) and (issuer != ''):
-            issuer = issuer.replace(':', '')
-            label = '{}:{}'.format(issuer, str(self.user))
-            urlencoded_params += '&issuer={}'.format(quote(issuer))  # encode issuer as per RFC 3986, not quote_plus
-
-        url = 'otpauth://totp/{}?{}'.format(quote(label), urlencoded_params)
-        return url
 
     # see django_otp.plugins.otp_totp.models.TOTPDevice
     def verify_token(self, token):
