@@ -11,7 +11,7 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
+from .abstract import AbstractSideChannelDevice, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 try:
@@ -39,7 +39,7 @@ TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
 # TODO: reset token when "confirmed" updated?
-class EmailDevice(AbstractDevice):
+class EmailDevice(AbstractSideChannelDevice):
     email = models.EmailField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
     # reserved # hardcode = models.CharField(max_length=128) # experimental

@@ -8,7 +8,7 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin
+from .abstract import AbstractSideChannelDevice, AbstractUserMixin
 
 
 try:
@@ -27,7 +27,7 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME'
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class PhoneDevice(AbstractDevice):
+class PhoneDevice(AbstractSideChannelDevice):
     """
     Could be also called as SmsDevice
     # todo: rename to SmsDevice? add VoiceDevice? No!
