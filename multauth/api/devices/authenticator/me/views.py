@@ -27,31 +27,31 @@ class MeAuthenticatorKeyTextView(views.APIView):
         user = request.user
 
         try:
-            user = request.user
             device = user.get_authenticator_device()
-            key = device.key_b32
+            key = device.key_b32.decode()
+            result = serializers.UserAuthenticatorKeySerializer({
+                'key': key,
+            })
+
+            return Response(result.data, status=status.HTTP_200_OK)
 
         except AuthenticatorDevice.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     # @swagger_auto_schema(
-    #     operation_description='Set push notification code, aka token',
+    #     operation_description='Set and get authenticator key',
     #     request_body=serializers.UserAuthenticatorPushcodeSerializer,
     # )
-    # def post(self, request):
-    #     serializer = serializers.UserAuthenticatorPushcodeSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
+    def post(self, request):
+        user = request.user
 
-    #     try:
-    #         user = request.user
-    #         device = user.get_phone_device()
-    #         device.pushcode = serializer.validated_data['pushcode'];
-    #         device.save()
+        try:
+            device = user.get_authenticator_device()
+            device.set_key()
+            return self.get(request)
 
-    #         return Response(status=status.HTTP_200_OK)
-
-    #     except AuthenticatorDevice.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
+        except AuthenticatorDevice.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class MeAuthenticatorKeyImageView(views.APIView):
@@ -68,7 +68,6 @@ class MeAuthenticatorKeyImageView(views.APIView):
         user = request.user
 
         try:
-            user = request.user
             device = user.get_authenticator_device()
             uri = device.key_uri
 
@@ -81,20 +80,16 @@ class MeAuthenticatorKeyImageView(views.APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     # @swagger_auto_schema(
-    #     operation_description='Set push notification code, aka token',
+    #     operation_description='Set and get authenticator key',
     #     request_body=serializers.UserAuthenticatorPushcodeSerializer,
     # )
-    # def post(self, request):
-    #     serializer = serializers.UserAuthenticatorPushcodeSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
+    def post(self, request):
+        user = request.user
 
-    #     try:
-    #         user = request.user
-    #         device = user.get_phone_device()
-    #         device.pushcode = serializer.validated_data['pushcode'];
-    #         device.save()
+        try:
+            device = user.get_authenticator_device()
+            device.set_key()
+            return self.get(request)
 
-    #         return Response(status=status.HTTP_200_OK)
-
-    #     except AuthenticatorDevice.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
+        except AuthenticatorDevice.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

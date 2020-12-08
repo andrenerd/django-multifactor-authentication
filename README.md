@@ -11,9 +11,11 @@ Flexible authentication for web, mobile, desktop and hybrid apps. It can be used
 Full list of supported services and corresponding identifiers:
 - Email
 - Phone (as Sms)
-- GoogleAuthentication (soon)
-- Yubikey (soon)
 - WhatsApp
+- Google Authenticator
+- Microsoft Authenticator
+- Authy, andOTP, etc
+- Yubikey (soon)
 - ...add yours
 
 and service providers:  
@@ -90,7 +92,7 @@ Custom use cases and how to config or code them.
 
 #### APIs
 
-Package contains full set of [rest api endpoints](./multauth/api/urls.py), but it's optional. To use it, `djangorestframework>=3.10.3` should be installed and the urls be included:
+Package contains full set of [rest api endpoints](./multauth/api/urls.py), but it's optional. To activate it, `djangorestframework>=3.10.3` should be installed and the urls be included:
 ```
 urlpatterns = [
     path(r'^', include('multauth.api.urls')),

@@ -9,4 +9,4 @@ __all__ = (
 
 
 class UserAuthenticatorKeySerializer(serializers.Serializer):
-    pass
+    key = serializers.CharField()

@@ -35,7 +35,7 @@ MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_ISSUER', 'Mul
 
 
 # see django_otp.plugins.otp_totp.models.TOTPDevice
-def default_key():
+def key_generator():
     return random_hex(MULTAUTH_KEY_LENGTH)
 
 
@@ -46,7 +46,7 @@ def key_validator(value):
 
 class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     # see django_otp.plugins.otp_totp.models.TOTPDevice
-    key = models.CharField(max_length=80, validators=[key_validator], default=default_key) # a hex-encoded secret key of up to 40 bytes
+    key = models.CharField(max_length=80, validators=[key_validator], default=key_generator) # a hex-encoded secret key of up to 40 bytes
     step = models.PositiveSmallIntegerField(default=30) # the time step in seconds.
     t0 = models.BigIntegerField(default=0) # the Unix time at which to begin counting steps
     digits = models.PositiveSmallIntegerField(choices=[(6, 6), (8, 8)], default=6) # the number of digits to expect in a token
@@ -105,6 +105,11 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
             self.key = self.generate_key()
         return super().save(*args, **kwargs)
 
+    def set_key(self, raw_hardcode):
+        self.key = key_generator()
+        self.save(update_fields=['key'])
+        return self.key
+
     def generate_totp(self, request=None):
         key = self.bin_key
         totp = TOTP(key, self.step, self.t0, self.digits, self.drift)
@@ -115,9 +120,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
         totp = self.generate_totp()
 
         if MULTAUTH_DEBUG:
-            print('Fake auth message, Google Authenticator, token: %s ' % (totp))
-
-        return totp
+            print('Fake auth message, Google Authenticator, token: %s ' % (totp.token()))
 
     # see django_otp.plugins.otp_totp.models.TOTPDevice
     def verify_token(self, token):
@@ -130,12 +133,12 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
         except Exception:
             verified = False
         else:
-            totp = generate_totp()
+            totp = self.generate_totp()
             verified = totp.verify(token, self.tolerance, self.last_t + 1)
  
             if verified:
                 self.last_t = totp.t()
-                if MULTAUTH_THROTTLE_SYNC:
+                if MULTAUTH_SYNC:
                     self.drift = totp.drift
                 self.throttle_reset(commit=False)
                 self.save()

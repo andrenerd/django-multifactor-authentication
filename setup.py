@@ -10,7 +10,7 @@ def read(f):
 
 setup(
     name='django-multifactor-authentication',
-    keywords='django authentication multifactor mfa 2fa 3fa user signin signup twillio sendgrid nexmo sns',
+    keywords='django authentication multifactor mfa 2fa 3fa user signin signup otp google microsoft authenticator authy andotp whatsapp telegram yubikey twillio sendgrid nexmo sns',
     version='1.1.0',
     url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
