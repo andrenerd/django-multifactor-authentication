@@ -75,6 +75,9 @@ def mixin_post_save(cls, sender, instance, *args, **kwargs):
     for identifier in identifiers:
         device_class = instance.get_device_class_by_identifier(identifier)
 
+        if device_class._meta.abstract:
+            continue
+
         values = {'user': user, identifier: getattr(user, identifier)}
 
         try:

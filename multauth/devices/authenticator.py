@@ -66,6 +66,12 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     def __hash__(self):
         return hash((self.key,))
 
+    def is_interactive(self):
+        return False
+
+    def verify_is_allowed(self):
+        return (False, None)
+
     # see django_otp.plugins.otp_totp.models.TOTPDevice
     @property
     def bin_key(self):
