@@ -20,12 +20,6 @@ class UsernameService(AbstractService):
     class Meta:
         abstract = True
 
-    def is_interactive(self):
-        return False
-
-    def verify_is_allowed(self):
-        return (False, None)
-
 
 class UsernameUserMixin(AbstractUserMixin):
     username_validator = UnicodeUsernameValidator()

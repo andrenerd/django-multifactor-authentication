@@ -69,9 +69,6 @@ class AuthenticatorService(ThrottlingMixin, PasscodeServiceMixin, AbstractServic
     def is_interactive(self):
         return False
 
-    def verify_is_allowed(self):
-        return (False, None)
-
     # see django_otp.plugins.otp_totp.models.TOTPService
     @property
     def bin_key(self):
@@ -130,10 +127,12 @@ class AuthenticatorService(ThrottlingMixin, PasscodeServiceMixin, AbstractServic
 
     # see django_otp.plugins.otp_totp.models.TOTPService
     def verify_token(self, token):
+        print('!!!!AAAA')
         verify_allowed, _ = self.verify_is_allowed()
         if not verify_allowed:
             return False
 
+        print('!!!!BBBB')
         try:
             token = int(token)
         except Exception:
