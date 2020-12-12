@@ -7,11 +7,11 @@ UserModel = get_user_model()
 
 def get_url_modules(package):
   modules = []
-  device_module_short_names = [
-      x.__module__.split('.')[-1] for x in UserModel.get_device_classes()
+  service_module_short_names = [
+      x.__module__.split('.')[-1] for x in UserModel.get_service_classes()
   ]
 
-  for name in device_module_short_names:
+  for name in service_module_short_names:
       try:
           modules.append(import_module('..' + name + '.urls', package=package))
       except (ModuleNotFoundError,):

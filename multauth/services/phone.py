@@ -8,11 +8,11 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractSideChannelDevice, AbstractUserMixin
+from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 
 try:
-    PhoneProviderPath = settings.MULTAUTH_DEVICE_PHONE_PROVIDER
+    PhoneProviderPath = settings.MULTAUTH_SERVICE_PHONE_PROVIDER
     PhoneProvider = import_string(PhoneProviderPath) # ex. multauth.providers.VonageProvider
 except AttributeError:
     from ..providers.twilio import TwilioProvider
@@ -21,16 +21,16 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_PHONE_CONFIRMED', True)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME', 'phone')
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_SERVICE_PHONE_CONFIRMED', True)
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_SERVICE_PHONE_TEMPLATE_NAME', 'phone')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class PhoneDevice(AbstractSideChannelDevice):
+class PhoneService(PasscodeServiceMixin, AbstractService):
     """
-    Could be also called as SmsDevice
-    # todo: rename to SmsDevice? add VoiceDevice? No!
+    Could be also called as SmsService
+    # todo: rename to SmsService? add VoiceService? No!
     """
     phone = PhoneNumberField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
@@ -42,7 +42,7 @@ class PhoneDevice(AbstractSideChannelDevice):
     IDENTIFIER_FIELD = 'phone'
 
     def __eq__(self, other):
-        if not isinstance(other, PhoneDevice):
+        if not isinstance(other, PhoneService):
             return False
 
         return self.phone == other.phone \
@@ -113,25 +113,25 @@ class PhoneUserMixin(AbstractUserMixin):
 
     @property
     def is_phone_confirmed(self):
-        device = self.get_phone_device()
-        return device.confirmed if device else False
+        service = self.get_phone_service()
+        return service.confirmed if service else False
 
-    def get_phone_device(self):
+    def get_phone_service(self):
         phone = getattr(self, 'phone', None)
 
         try:
-            device = PhoneDevice.objects.get(user=self, phone=phone)
-        except PhoneDevice.DoesNotExist:
-            device = None
+            service = PhoneService.objects.get(user=self, phone=phone)
+        except PhoneService.DoesNotExist:
+            service = None
 
-        return device
+        return service
 
     def verify_phone(self, request=None):
         if getattr(self, 'phone', None):
-            device = self.get_phone_device()
+            service = self.get_phone_service()
 
-            if not device:
-                device = PhoneDevice(
+            if not service:
+                service = PhoneService(
                     user=self,
                     name='default', # temporal
                     phone=self.phone,
@@ -139,19 +139,19 @@ class PhoneUserMixin(AbstractUserMixin):
                     confirmed=False,
                 )
 
-                device.save()
+                service.save()
 
-            device.generate_challenge(request)
-            return device
+            service.generate_challenge(request)
+            return service
 
     def verify_phone_token(self, token):
         if getattr(self, 'phone', None):
-            device = self.get_phone_device()
+            service = self.get_phone_service()
 
-            if not device:
+            if not service:
                 return False
 
-            return device.verify_token(token) if token else False
+            return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)

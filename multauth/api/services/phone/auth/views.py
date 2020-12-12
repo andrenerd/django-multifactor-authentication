@@ -11,14 +11,14 @@ from .. import auth_serializers
 from . import serializers
 
 
-class SignupVerificationWhatsappView(views.APIView):
+class SignupVerificationPhoneView(views.APIView):
     authentication_classes = (TokenInactiveAuthentication,)
     permission_classes = (IsAuthenticated,)
-    serializer_class = serializers.SignupVerificationWhatsappSerializer
+    serializer_class = serializers.SignupVerificationPhoneSerializer
 
     # @swagger_auto_schema(
-    #     operation_description='User WhatsApp verification',
-    #     request_body=auth_serializers.SignupVerificationWhatsappSerializer,
+    #     operation_description='User phone verification',
+    #     request_body=auth_serializers.SignupVerificationPhoneSerializer,
     #     responses={
     #         200: auth_serializers.SignupVerificationUserSerializer,
     #     }
@@ -34,12 +34,12 @@ class SignupVerificationWhatsappView(views.APIView):
         return Response(serializer.data)
 
 
-class SigninPasscodeWhatsappView(views.APIView):
+class SigninPasscodePhoneView(views.APIView):
     # @swagger_auto_schema(
-    #     operation_description='Send signin passcode to device:whatsapp',
-    #     request_body=serializers.SigninPasscodeWhatsappSerializer,
+    #     operation_description='Send signin passcode to service:phone',
+    #     request_body=serializers.SigninPasscodePhoneSerializer,
     # )
     def post(self, request):
-        serializer = serializers.SigninPasscodeWhatsappSerializer(data=request.data)
+        serializer = serializers.SigninPasscodePhoneSerializer(data=request.data)
         serializer.is_valid(raise_exception=False) # no exceptions here
         return Response(status=status.HTTP_200_OK)

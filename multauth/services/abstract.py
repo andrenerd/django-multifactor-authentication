@@ -12,11 +12,15 @@ PASSCODE_LENGTH = getattr(settings, 'MULTAUTH_PASSCODE_LENGTH', 6) # n digits
 PASSCODE_EXPIRY = getattr(settings, 'MULTAUTH_PASSCODE_EXPIRY', 3600) # n secs
 
 
-class AbstractDeviceMixin(models.Model):
+class AbstractService(models.Model):
     USER_MIXIN = None # required
     IDENTIFIER_FIELD = None # required
 
     _hardcode = None # see _password attribure in AbstractBaseUser
+
+    class Meta:
+        app_label = 'multauth'
+        abstract = True
 
     # def __str__(self):
     #   raise NotImplementedError
@@ -28,7 +32,7 @@ class AbstractDeviceMixin(models.Model):
     # based on check_hardcode from django.contrib.auth.hashers
     def set_hardcode(self, raw_hardcode):
         if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the device')
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
 
         self.hardcode = make_password(raw_hardcode)
         # reserved # self._hardcode = raw_hardcode
@@ -36,7 +40,7 @@ class AbstractDeviceMixin(models.Model):
     # based on check_hardcode from django.contrib.auth.hashers
     def check_hardcode(self, raw_hardcode):
         if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the device')
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
 
         def setter(raw_hardcode):
             self.set_hardcode(raw_hardcode)
@@ -46,24 +50,50 @@ class AbstractDeviceMixin(models.Model):
         return check_password(raw_hardcode, self.hardcode, setter)
 
 
-class AbstractDevice(Device, AbstractDeviceMixin):
-    class Meta:
-        app_label = 'multauth'
-        abstract = True
-
-
-class AbstractSideChannelDevice(SideChannelDevice, AbstractDeviceMixin):
+class PasscodeServiceMixin(SideChannelDevice):
     class Meta:
         app_label = 'multauth'
         abstract = True
 
     def generate_token(self, length=PASSCODE_LENGTH, valid_secs=PASSCODE_EXPIRY):
         """
-        Device token, or one-time password, is used under name "passcode".
+        Service token, or one-time password, is used under name "passcode".
         To not mess it with authorization token.
-        (term "token" is derived from device_otp package and kept for Devices)
+        (term "token" is derived from device_otp package and kept for Services)
         """
         super().generate_token(length, valid_secs)
+
+
+class HardcodeServiceMixin():
+    _hardcode = None # see _password attribure in AbstractBaseUser
+
+    class Meta:
+        app_label = 'multauth'
+        abstract = True
+
+    @property
+    def has_hardcode(self):
+        return hasattr(self, 'hardcode')
+
+    # based on check_hardcode from django.contrib.auth.hashers
+    def set_hardcode(self, raw_hardcode):
+        if not self.has_hardcode:
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
+
+        self.hardcode = make_password(raw_hardcode)
+        # reserved # self._hardcode = raw_hardcode
+
+    # based on check_hardcode from django.contrib.auth.hashers
+    def check_hardcode(self, raw_hardcode):
+        if not self.has_hardcode:
+            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
+
+        def setter(raw_hardcode):
+            self.set_hardcode(raw_hardcode)
+            self._hardcode = None
+            self.save(update_fields=['hardcode'])
+
+        return check_password(raw_hardcode, self.hardcode, setter)
 
 
 class AbstractUserMixin(models.Model):

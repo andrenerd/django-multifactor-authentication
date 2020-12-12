@@ -14,12 +14,12 @@ from django_otp.models import ThrottlingMixin
 from django_otp.util import hex_validator, random_hex
 from django_otp.oath import TOTP
 
-from .abstract import AbstractDevice, AbstractUserMixin
+from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 
 # reserved
 # try:
-#     AuthenticatorProviderPath = settings.MULTAUTH_DEVICE_AUTHENTICATOR_PROVIDER
+#     AuthenticatorProviderPath = settings.MULTAUTH_SERVICE_AUTHENTICATOR_PROVIDER
 #     AuthenticatorProvider = import_string(AuthenticatorProviderPath) # ex. multauth.providers.GauthenticatorProvider
 # except AttributeError:
 #     from ..providers.mail import GauthenticatorProvider
@@ -28,24 +28,24 @@ from .abstract import AbstractDevice, AbstractUserMixin
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_KEY_LENGTH', 20)
+MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_KEY_LENGTH', 20)
 MULTAUTH_SYNC = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_SYNC', True)
-MULTAUTH_THROTTLE_FACTOR = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_THROTTLE_FACTOR', 1)
-MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_ISSUER', 'Multauth')
+MULTAUTH_THROTTLE_FACTOR = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_THROTTLE_FACTOR', 1)
+MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_ISSUER', 'Multauth')
 
 
-# see django_otp.plugins.otp_totp.models.TOTPDevice
+# see django_otp.plugins.otp_totp.models.TOTPService
 def key_generator():
     return random_hex(MULTAUTH_KEY_LENGTH)
 
 
-# see django_otp.plugins.otp_totp.models.TOTPDevice
+# see django_otp.plugins.otp_totp.models.TOTPService
 def key_validator(value):
     return hex_validator()(value)
 
 
-class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
+class AuthenticatorService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
+    # see django_otp.plugins.otp_totp.models.TOTPService
     key = models.CharField(max_length=80, validators=[key_validator], default=key_generator) # a hex-encoded secret key of up to 40 bytes
     step = models.PositiveSmallIntegerField(default=30) # the time step in seconds.
     t0 = models.BigIntegerField(default=0) # the Unix time at which to begin counting steps
@@ -57,7 +57,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     USER_MIXIN = 'AuthenticatorUserMixin'
 
     def __eq__(self, other):
-        if not isinstance(other, AuthenticatorDevice):
+        if not isinstance(other, AuthenticatorService):
             return False
 
         return self.key == other.key
@@ -72,7 +72,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     def verify_is_allowed(self):
         return (False, None)
 
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    # see django_otp.plugins.otp_totp.models.TOTPService
     @property
     def bin_key(self):
         return unhexlify(self.key.encode())
@@ -81,7 +81,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
     def key_b32(self):
         return b32encode(self.bin_key)
 
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    # see django_otp.plugins.otp_totp.models.TOTPService
     @property
     def key_uri(self):
         user = self.user
@@ -128,7 +128,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
         if MULTAUTH_DEBUG:
             print('Fake auth message, Google Authenticator, token: %s ' % (totp.token()))
 
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    # see django_otp.plugins.otp_totp.models.TOTPService
     def verify_token(self, token):
         verify_allowed, _ = self.verify_is_allowed()
         if not verify_allowed:
@@ -154,7 +154,7 @@ class AuthenticatorDevice(ThrottlingMixin, AbstractDevice):
 
         return verified
 
-    # see django_otp.plugins.otp_totp.models.TOTPDevice
+    # see django_otp.plugins.otp_totp.models.TOTPService
     # see django_otp.models.ThrottlingMixin
     def get_throttle_factor(self):
         return MULTAUTH_THROTTLE_FACTOR
@@ -167,25 +167,21 @@ class AuthenticatorUserMixin(AbstractUserMixin):
     def __str__(self):
         return str(getattr(self, 'authenticator', ''))
 
-    @property
-    def is_authenticator_confirmed(self):
-        return True
-
-    def get_authenticator_device(self):
+    def get_authenticator_service(self):
         try:
-            device = AuthenticatorDevice.objects.get(user=self)
-        except AuthenticatorDevice.DoesNotExist:
-            device = None
+            service = AuthenticatorService.objects.get(user=self)
+        except AuthenticatorService.DoesNotExist:
+            service = None
 
-        return device
+        return service
 
     def verify_authenticator_token(self, token):
-        device = self.get_authenticator_device()
+        service = self.get_authenticator_service()
 
-        if not device:
+        if not service:
             return False
 
-        return device.verify_token(token) if token else False
+        return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)

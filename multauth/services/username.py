@@ -6,14 +6,14 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
+from .abstract import AbstractService, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 
 
-class UsernameDevice(AbstractDevice):
+class UsernameService(AbstractService):
     USER_MIXIN = 'UsernameUserMixin'
     IDENTIFIER_FIELD = 'username'
 
@@ -45,21 +45,14 @@ class UsernameUserMixin(AbstractUserMixin):
     def __str__(self):
         return str(getattr(self, 'username'))
 
-    @property
-    def is_username_confirmed(self):
-        return True
-
     def clean(self):
         super().clean()
 
         if self.username:
             self.username = self.__class__.objects.normalize_username(self.username)
 
-    def get_username_device(self):
-        return None # todo: or UsernameDevice()?
-
-    def verify_username(self, request=None):
-        pass
+    def get_username_service(self):
+        return None # todo: or UsernameService()?
 
     def verify(self, request=None):
         super().verify(request)

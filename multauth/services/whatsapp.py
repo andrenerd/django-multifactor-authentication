@@ -8,11 +8,11 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractSideChannelDevice, AbstractUserMixin
+from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 
 try:
-    WhatsappProviderPath = settings.MULTAUTH_DEVICE_WHATSAPP_PROVIDER
+    WhatsappProviderPath = settings.MULTAUTH_SERVICE_WHATSAPP_PROVIDER
     WhatsappProvider = import_string(WhatsappProviderPath) # ex. multauth.providers.VonageProvider
 except AttributeError:
     from ..providers.twilio import TwilioProvider
@@ -21,23 +21,21 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_WHATSAPP_CONFIRMED', True)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_WHATSAPP_TEMPLATE_NAME', 'whatsapp')
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_SERVICE_WHATSAPP_CONFIRMED', True)
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_SERVICE_WHATSAPP_TEMPLATE_NAME', 'whatsapp')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class WhatsappDevice(AbstractSideChannelDevice):
+class WhatsappService(PasscodeServiceMixin, AbstractService):
     whatsapp = PhoneNumberField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
-    # TODO: make it optional or ?
-    pushcode = models.CharField(max_length=256, blank=True, null=True, unique=True, editable=False)
 
     USER_MIXIN = 'WhatsappUserMixin'
     IDENTIFIER_FIELD = 'whatsapp'
 
     def __eq__(self, other):
-        if not isinstance(other, WhatsappDevice):
+        if not isinstance(other, WhatsappService):
             return False
 
         return self.whatsapp == other.whatsapp \
@@ -108,25 +106,25 @@ class WhatsappUserMixin(AbstractUserMixin):
 
     @property
     def is_whatsapp_confirmed(self):
-        device = self.get_whatsapp_device()
-        return device.confirmed if device else False
+        service = self.get_whatsapp_service()
+        return service.confirmed if service else False
 
-    def get_whatsapp_device(self):
+    def get_whatsapp_service(self):
         whatsapp = getattr(self, 'whatsapp', None)
 
         try:
-            device = WhatsappDevice.objects.get(user=self, whatsapp=whatsapp)
-        except WhatsappDevice.DoesNotExist:
-            device = None
+            service = WhatsappService.objects.get(user=self, whatsapp=whatsapp)
+        except WhatsappService.DoesNotExist:
+            service = None
 
-        return device
+        return service
 
     def verify_whatsapp(self, request=None):
         if getattr(self, 'whatsapp', None):
-            device = self.get_whatsapp_device()
+            service = self.get_whatsapp_service()
 
-            if not device:
-                device = WhatsappDevice(
+            if not service:
+                service = WhatsappService(
                     user=self,
                     name='default', # temporal
                     whatsapp=self.whatsapp,
@@ -134,19 +132,19 @@ class WhatsappUserMixin(AbstractUserMixin):
                     confirmed=False,
                 )
 
-                device.save()
+                service.save()
 
-            device.generate_challenge(request)
-            return device
+            service.generate_challenge(request)
+            return service
 
     def verify_whatsapp_token(self, token):
         if getattr(self, 'whatsapp', None):
-            device = self.get_whatsapp_device()
+            service = self.get_whatsapp_service()
 
-            if not device:
+            if not service:
                 return False
 
-            return device.verify_token(token) if token else False
+            return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)

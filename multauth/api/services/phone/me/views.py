@@ -5,7 +5,7 @@ from rest_framework import exceptions, parsers, views, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from multauth.devices import PhoneDevice
+from multauth.services import PhoneService
 # from ..permissions import IsCustomUser
 from . import serializers
 
@@ -24,11 +24,11 @@ class MePhonePushcodeView(views.APIView):
 
         try:
             user = request.user
-            device = user.get_phone_device()
-            device.pushcode = serializer.validated_data['pushcode'];
-            device.save()
+            service = user.get_phone_service()
+            service.pushcode = serializer.validated_data['pushcode'];
+            service.save()
 
             return Response(status=status.HTTP_200_OK)
 
-        except PhoneDevice.DoesNotExist:
+        except PhoneService.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

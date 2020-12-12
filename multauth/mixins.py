@@ -7,7 +7,7 @@ from django.utils.module_loading import import_string
 from django.conf import settings
 from django_otp import devices_for_user
 
-from .devices import UsernameDevice, EmailDevice, PhoneDevice
+from .services import UsernameService, EmailService, PhoneService
 from .decorators import (
     is_authenticated,
     is_admin,
@@ -15,26 +15,26 @@ from .decorators import (
 )
 
 
-DEVICES = tuple(import_string(d) for d in tuple(getattr(settings, 'MULTAUTH_DEVICES', [
-    'multauth.devices.UsernameDevice',
-    'multauth.devices.EmailDevice',
-    'multauth.devices.PhoneDevice',
+SERVICES = tuple(import_string(d) for d in tuple(getattr(settings, 'MULTAUTH_SERVICES', [
+    'multauth.services.UsernameService',
+    'multauth.services.EmailService',
+    'multauth.services.PhoneService',
 ])));
 
 mixin_classes = tuple(
-    getattr(import_module(d.__module__), d.USER_MIXIN) for d in DEVICES
+    getattr(import_module(d.__module__), d.USER_MIXIN) for d in SERVICES
 )
 
 if not mixin_classes:
-    msg = _('At least one Device should be added (see MULTAUTH_DEVICES settings)')
+    msg = _('At least one Service should be added (see MULTAUTH_SERVICES settings)')
     raise ValueError(msg)
 
 mixin_identifiers = tuple(
-    c.IDENTIFIER_FIELD for c in DEVICES if getattr(c, 'IDENTIFIER_FIELD', None)
+    c.IDENTIFIER_FIELD for c in SERVICES if getattr(c, 'IDENTIFIER_FIELD', None)
 )
 
 if not mixin_identifiers:
-    msg = _('At least one identifier should be declared (see Device.IDENTIFIER_FIELD attribute)')
+    msg = _('At least one identifier should be declared (see Service.IDENTIFIER_FIELD attribute)')
     raise ValueError(msg)
 
 mixin_classes_username_fields = tuple(
@@ -53,74 +53,74 @@ mixin_meta_options = {
 }
 
 @classmethod
-def mixin_get_device_classes(cls):
-    return list(DEVICES)
+def mixin_get_service_classes(cls):
+    return list(SERVICES)
 
 @classmethod
-def mixin_get_device_class_by_identifier(cls, identifier):
+def mixin_get_service_class_by_identifier(cls, identifier):
     if identifier not in mixin_identifiers:
         return None
 
-    return DEVICES[mixin_identifiers.index(identifier)]
+    return SERVICES[mixin_identifiers.index(identifier)]
 
 # todo: refactor, should be called for "updated" identifiers only
 @classmethod
 def mixin_post_save(cls, sender, instance, *args, **kwargs):
     """
-    Create or update devices with identifiers
+    Create or update services with identifiers
     """
     user = instance
     identifiers = [x for x in instance.IDENTIFIERS if getattr(instance, x, None)]
 
     for identifier in identifiers:
-        device_class = instance.get_device_class_by_identifier(identifier)
+        service_class = instance.get_service_class_by_identifier(identifier)
 
-        if device_class._meta.abstract:
+        if service_class._meta.abstract:
             continue
 
         values = {'user': user, identifier: getattr(user, identifier)}
 
         try:
-            d = device_class.objects.get(**values)
-        except device_class.DoesNotExist:
+            d = service_class.objects.get(**values)
+        except service_class.DoesNotExist:
             d = None
 
         if not d:
-            device_class.objects.create(**values)
+            service_class.objects.create(**values)
 
 
 @classmethod
 def mixin_post_create(cls, sender, instance, created, *args, **kwargs):
     """
-    Create or update devices without indetifiers
+    Create or update services without indetifiers
     """
     if not created:
         return
 
     user = instance
-    device_classes = tuple(
-        c for c in DEVICES if not getattr(c, 'IDENTIFIER_FIELD', None)
+    service_classes = tuple(
+        c for c in SERVICES if not getattr(c, 'IDENTIFIER_FIELD', None)
     )
 
-    for device_class in device_classes:
+    for service_class in service_classes:
         values = {'user': user}
 
         try:
-            d = device_class.objects.get(**values)
-        except device_class.DoesNotExist:
+            d = service_class.objects.get(**values)
+        except service_class.DoesNotExist:
             d = None
 
         if not d:
-            device_class.objects.create(**values)
+            service_class.objects.create(**values)
 
 
-def mixin_get_devices(self, confirmed=None):
+def mixin_get_services(self, confirmed=None):
     # to think: can be sorted by order in the settings
     return devices_for_user(self, confirmed)
 
 
-UserDevicesMixin = type(
-    'UserDevicesMixin',
+UserServicesMixin = type(
+    'UserServicesMixin',
     mixin_classes,
     {
         '__module__': 'multauth',
@@ -131,14 +131,14 @@ UserDevicesMixin = type(
 
         '_post_save': mixin_post_save,
         '_post_create': mixin_post_create,
-        'get_device_classes': mixin_get_device_classes,
-        'get_device_class_by_identifier': mixin_get_device_class_by_identifier,
-        'get_devices': mixin_get_devices,
+        'get_service_classes': mixin_get_service_classes,
+        'get_service_class_by_identifier': mixin_get_service_class_by_identifier,
+        'get_services': mixin_get_services,
     }
 )
 
-post_save.connect(UserDevicesMixin._post_save, sender=settings.AUTH_USER_MODEL)
-post_save.connect(UserDevicesMixin._post_create, sender=settings.AUTH_USER_MODEL)
+post_save.connect(UserServicesMixin._post_save, sender=settings.AUTH_USER_MODEL)
+post_save.connect(UserServicesMixin._post_create, sender=settings.AUTH_USER_MODEL)
 
 
 class IsAuthenticatedMixin(object):

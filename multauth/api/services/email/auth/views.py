@@ -59,7 +59,7 @@ class SignupVerificationEmailKeyView(views.APIView):
 
 class SigninPasscodeEmailView(views.APIView):
     # @swagger_auto_schema(
-    #     operation_description='Send signin passcode to device:email',
+    #     operation_description='Send signin passcode to service:email',
     #     request_body=serializers.SigninPasscodeEmailSerializer,
     # )
     def post(self, request):

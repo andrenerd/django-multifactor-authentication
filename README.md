@@ -48,28 +48,29 @@ MULTAUTH_FLOWS = (
 )
 
 ```
+These flows mean, that user could be authenticated with any of these sets of crendials, ie set of `identfier` and `secrets`. For example, this one: ('email', 'password', 'passcode',). Usually only one set of credentials is used.
 
 
 Extra settings (optional):  
-(see built-in [devices](./multauth/devices), [providers](./multauth/providers) and [templates](./multauth/templates))  
+(see built-in [services](./multauth/services), [providers](./multauth/providers) and [templates](./multauth/templates))  
 ```
-MULTAUTH_DEVICES = [
-  'multauth.devices.UsernameDevice',
-  'multauth.devices.EmailDevice',
-  'multauth.devices.PhoneDevice',
+MULTAUTH_SERVICES = [
+  'multauth.services.UsernameService',
+  'multauth.services.EmailService',
+  'multauth.services.PhoneService',
 ] # by default
 
 MULTAUTH_DEBUG = True # False by default
 MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
 MULTAUTH_PASSCODE_EXPIRY = 3600 # time in seconds
-MULTAUTH_PASSCODE_DEVICE = 'multauth.devices.PhoneDevice' # by default
+MULTAUTH_PASSCODE_SERVICE = 'multauth.services.PhoneService' # by default
 
-MULTAUTH_DEVICE_EMAIL_PROVIDER = 'multauth.providers.MailProvider' # by default
-MULTAUTH_DEVICE_PHONE_PROVIDER = 'multauth.providers.TwilioProvider' # by default
+MULTAUTH_SERVICE_EMAIL_PROVIDER = 'multauth.providers.MailProvider' # by default
+MULTAUTH_SERVICE_PHONE_PROVIDER = 'multauth.providers.TwilioProvider' # by default
 
-MULTAUTH_DEVICE_EMAIL_TEMPLATE_NAME = 'custom'
-MULTAUTH_DEVICE_EMAIL_VERIFICATION_VIEWNAME = 'custom'
-MULTAUTH_DEVICE_PHONE_TEMPLATE_NAME = 'custom'
+MULTAUTH_SERVICE_EMAIL_TEMPLATE_NAME = 'custom'
+MULTAUTH_SERVICE_EMAIL_VERIFICATION_VIEWNAME = 'custom'
+MULTAUTH_SERVICE_PHONE_TEMPLATE_NAME = 'custom'
 ```
 
 
@@ -106,21 +107,21 @@ Users are set as "active" on creation.
 This behavior is not managed by settings for now (check for further updates).
 
 
-#### Devices verification
+#### Services verification
 
-By default all devices are set as "confirmed" on creation.
+By default all services are set as "confirmed" on creation.
 To change this behavior extra settings should be added, for example:  
 ```
-MULTAUTH_DEVICE_EMAIL_CONFIRMED = False
-MULTAUTH_DEVICE_PHONE_CONFIRMED = False
+MULTAUTH_SERVICE_EMAIL_CONFIRMED = False
+MULTAUTH_SERVICE_PHONE_CONFIRMED = False
 ...
 ```
 
-Non-comfirmed devices will automatically be called for verification (token/key to be sent) on creation or idenfier updates. To invoke verification manually, call api endpoints:
+Non-comfirmed services will automatically be called for verification (token/key to be sent) on creation or idenfier updates. To invoke verification manually, call api endpoints:
 - `multauth:signup-verification`
 
 or model methods:
-- `user.verify` for all non-confirmed devices
+- `user.verify` for all non-confirmed services
 - `user.verify_email` for email
 - `user.verify_phone` for phone
 - ...
