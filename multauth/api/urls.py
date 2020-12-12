@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from .me import views as me_views
 from .auth import views as auth_views
-from .devices import urls as devices_urls
+from .services import urls as services_urls
 
 
 app_name = 'multauth'
@@ -15,5 +15,5 @@ urlpatterns = [
     path('signup/', auth_views.SignupView.as_view(), name='signup'),
     path('signup/verification/', auth_views.SignupVerificationView.as_view(), name='signup-verification'),
 
-    path(r'^', include(devices_urls)),
+    path(r'^', include(services_urls)),
 ]

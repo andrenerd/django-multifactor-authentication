@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from rest_framework import exceptions, serializers
-from multauth.devices import EmailDevice
+from multauth.services import EmailService
 
 
 __all__ = (
@@ -21,9 +21,9 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_email_token(data.get('token')):
-            device = user.get_email_device()
-            device.confirmed = True
-            device.save()
+            service = user.get_email_service()
+            service.confirmed = True
+            service.save()
             # reserved # user.is_active = True
             # reserved # user.save()
 
@@ -43,9 +43,9 @@ class SignupVerificationEmailKeySerializer(serializers.Serializer):
 
         if user:
             if not user.is_email_confirmed:
-                device = user.get_email_device()
-                device.confirmed = True
-                device.save()
+                service = user.get_email_service()
+                service.confirmed = True
+                service.save()
                 # reserved # user.is_active = True
                 # reserved # user.save()
 
@@ -67,9 +67,9 @@ class SigninPasscodeEmailSerializer(serializers.Serializer):
 
         if email:
             try:
-                device = EmailDevice.objects.get(email=email)
-                device.generate_challenge()
-            except EmailDevice.DoesNotExist:
+                service = EmailService.objects.get(email=email)
+                service.generate_challenge()
+            except EmailService.DoesNotExist:
                 pass
 
         return super().validate(data)

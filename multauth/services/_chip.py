@@ -4,7 +4,7 @@ from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
-from .abstract import AbstractDevice, AbstractUserMixin
+from .abstract import AbstractService, HardcodeServiceMixin
 
 
 try:
@@ -21,7 +21,7 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_CHIP_TEMPLATE_NAME',
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class ChipDevice(AbstractDevice):
+class ChipService(HardcodeServiceMixin, AbstractService):
     """
     Something in your head
     https://www.youtube.com/watch?v=i92zJNGdW2U
@@ -33,7 +33,7 @@ class ChipDevice(AbstractDevice):
     IDENTIFIER_FIELD = 'chip'
 
     def __eq__(self, other):
-        if not isinstance(other, ChipDevice):
+        if not isinstance(other, ChipService):
             return False
 
         return self.chip == other.chip \

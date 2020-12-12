@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group, AbstractBaseUser, PermissionsMixin
 from django.conf import settings
 
 from .managers import UserManager
-from .mixins import UserDevicesMixin
+from .mixins import UserServicesMixin
 
 # TODO: add MULTAUTH_ACTIVATED, as default 'is_active' field value
 # RESERVED # PASSWORD, PASSCODE, HARDCODE = 'password', 'passcode', 'hardcode'
@@ -20,7 +20,7 @@ SECRETS = tuple(getattr(settings, 'MULTAUTH_SECRETS', (
 )));
 
 
-class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
+class AbstractUser(AbstractBaseUser, UserServicesMixin, PermissionsMixin):
 
     first_name = models.CharField(_('First name'), max_length=30, null=True, blank=True)
     last_name = models.CharField(_('Last name'), max_length=150, null=True, blank=True)
@@ -68,44 +68,44 @@ class AbstractUser(AbstractBaseUser, UserDevicesMixin, PermissionsMixin):
     def verify(self, request=None):
         super().verify(request)
 
-    def set_passcode(self, device):
+    def set_passcode(self, service):
         # TODO: think to apply PASSCODE_DEVICE
-        if not device or not device.is_interactive:
-            raise self.__class__.DoesNotExist('No interactive device found')
+        if not service or not service.is_interactive:
+            raise self.__class__.DoesNotExist('No interactive service found')
 
-        return device.generate_challenge()
+        return service.generate_challenge()
 
-    def check_passcode(self, passcode, device=None):
+    def check_passcode(self, passcode, service=None):
         # don't mess this "token" with authorization tokens
-        if device:
-            return device.verify_token(passcode)
+        if service:
+            return service.verify_token(passcode)
         else:
             # TODO: what's this???
             return bool(match_token(self, passcode))
 
-    # TODO: how about to make device required
-    def set_hardcode(self, raw_hardcode, device=None):
+    # TODO: how about to make service required
+    def set_hardcode(self, raw_hardcode, service=None):
         if not user.pk:
             raise self.__class__.DoesNotExist('User should be saved, before setting hardcode')
 
-        if not device:
-            devices = [x for x in self.get_devices() if hasattr(x, 'hardcode')]
-            device = devices[0] if devices else None
+        if not service:
+            services = [x for x in self.get_services() if hasattr(x, 'hardcode')]
+            service = services[0] if services else None
 
-        if not device or not device.has_hardcode:
-            raise self.__class__.DoesNotExist('No device having hardcode found')
+        if not service or not service.has_hardcode:
+            raise self.__class__.DoesNotExist('No service having hardcode found')
 
-        device.set_hardcode(raw_hardcode)
+        service.set_hardcode(raw_hardcode)
 
-    def check_hardcode(self, raw_hardcode, device=None):
-        if not device:
-            devices = [x for x in self.get_devices() if hasattr(x, 'hardcode')]
-            device = devices[0] if devices else None
+    def check_hardcode(self, raw_hardcode, service=None):
+        if not service:
+            services = [x for x in self.get_services() if hasattr(x, 'hardcode')]
+            service = services[0] if services else None
 
-        if not device or not device.has_hardcode:
-            raise self.__class__.DoesNotExist('No device having hardcode found')
+        if not service or not service.has_hardcode:
+            raise self.__class__.DoesNotExist('No service having hardcode found')
 
-        return device.check_hardcode(raw_hardcode)
+        return service.check_hardcode(raw_hardcode)
 
 
 class User(AbstractUser):

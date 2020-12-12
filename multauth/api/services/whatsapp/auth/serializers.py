@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions, serializers
-from multauth.devices import WhatsappDevice
+from multauth.services import WhatsappService
 
 
 __all__ = (
@@ -19,9 +19,9 @@ class SignupVerificationWhatsappSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_whatsapp_token(data.get('token')):
-            device = user.get_whatsapp_device()
-            device.confirmed = True
-            device.save()
+            service = user.get_whatsapp_service()
+            service.confirmed = True
+            service.save()
             # reserved # user.is_active = True
             # reserved # user.save()
 
@@ -39,9 +39,9 @@ class SigninPasscodeWhatsappSerializer(serializers.Serializer):
 
         if whatsapp:
             try:
-                device = WhatsappDevice.objects.get(whatsapp=whatsapp)
-                device.generate_challenge()
-            except WhatsappDevice.DoesNotExist:
+                service = WhatsappService.objects.get(whatsapp=whatsapp)
+                service.generate_challenge()
+            except WhatsappService.DoesNotExist:
                 pass
 
         return super().validate(data)

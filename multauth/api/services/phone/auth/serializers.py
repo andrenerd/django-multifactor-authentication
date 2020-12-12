@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions, serializers
-from multauth.devices import PhoneDevice
+from multauth.services import PhoneService
 
 
 __all__ = (
@@ -19,9 +19,9 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
         user = request.user
 
         if user.verify_phone_token(data.get('token')):
-            device = user.get_phone_device()
-            device.confirmed = True
-            device.save()
+            service = user.get_phone_service()
+            service.confirmed = True
+            service.save()
             # reserved # user.is_active = True
             # reserved # user.save()
 
@@ -41,10 +41,10 @@ class SigninPasscodePhoneSerializer(serializers.Serializer):
 
         if phone:
             try:
-                device = PhoneDevice.objects.get(phone=phone)
-                if not hardcode or device.check_hardcode(hardcode):
-                    device.generate_challenge()
-            except PhoneDevice.DoesNotExist:
+                service = PhoneService.objects.get(phone=phone)
+                if not hardcode or service.check_hardcode(hardcode):
+                    service.generate_challenge()
+            except PhoneService.DoesNotExist:
                 pass
 
         return super().validate(data)

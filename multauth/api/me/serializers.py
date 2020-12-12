@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             + ['id', 'first_name', 'last_name']
             + ['date_joined', 'last_login', 'groups']
             + IDENTIFIERS
-            + ['is_' + x + '_confirmed' for x in IDENTIFIERS] # ex. ['is_email_confirmed']
+            + ['is_' + x + '_confirmed' for x in IDENTIFIERS if hasattr(UserModel, 'is_' + x + '_confirmed')] # ex. ['is_email_confirmed']
         )
 
         read_only_fields = (

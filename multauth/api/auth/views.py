@@ -83,7 +83,7 @@ class SignupView(views.APIView):
         # user.groups_add(user.GROUP_CUSTOM_USER)
 
         # send verification request
-        # to all the unverified devices
+        # to all the unverified services
         # TODO: add settings. make it step optional
         user.verify(request)
 
@@ -114,7 +114,7 @@ class SignupVerificationView(views.APIView):
     def post(self, request):
         user = request.user
 
-        # TODO: should it be called for specific devices?
+        # TODO: should it be called for specific services?
         user.verify(request)
 
         serializer = serializers.SignupVerificationUserSerializer(user)

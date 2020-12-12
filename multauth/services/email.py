@@ -11,11 +11,12 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractSideChannelDevice, AbstractUserMixin, PASSCODE_EXPIRY
+from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
+from .abstract import PASSCODE_EXPIRY
 
 
 try:
-    EmailProviderPath = settings.MULTAUTH_DEVICE_EMAIL_PROVIDER
+    EmailProviderPath = settings.MULTAUTH_SERVICE_EMAIL_PROVIDER
     EmailProvider = import_string(EmailProviderPath) # ex. multauth.providers.MailProvider
 except AttributeError:
     from ..providers.mail import MailProvider
@@ -24,12 +25,12 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_DEVICE_EMAIL_CONFIRMED', True)
+MULTAUTH_CONFIRMED = getattr(settings, 'MULTAUTH_SERVICE_EMAIL_CONFIRMED', True)
 MULTAUTH_TEMPLATE_NAME = getattr(settings, 
-    'MULTAUTH_DEVICE_EMAIL_TEMPLATE_NAME', 'email'
+    'MULTAUTH_SERVICE_EMAIL_TEMPLATE_NAME', 'email'
 )
 MULTAUTH_VERIFICATION_VIEWNAME = getattr(settings,
-    'MULTAUTH_DEVICE_EMAIL_VERIFICATION_VIEWNAME',
+    'MULTAUTH_SERVICE_EMAIL_VERIFICATION_VIEWNAME',
     'multauth:signup-verification-email-key'
 )
 
@@ -39,16 +40,15 @@ TEMPLATE_BODY_HTML_SUFFIX = '_body.html'
 
 
 # TODO: reset token when "confirmed" updated?
-class EmailDevice(AbstractSideChannelDevice):
+class EmailService(PasscodeServiceMixin, AbstractService):
     email = models.EmailField(unique=True)
     confirmed = models.BooleanField(default=MULTAUTH_CONFIRMED) # override parent
-    # reserved # hardcode = models.CharField(max_length=128) # experimental
 
     USER_MIXIN = 'EmailUserMixin'
     IDENTIFIER_FIELD = 'email'
 
     def __eq__(self, other):
-        if not isinstance(other, EmailDevice):
+        if not isinstance(other, EmailService):
             return False
 
         return self.email == other.email \
@@ -94,12 +94,12 @@ class EmailDevice(AbstractSideChannelDevice):
     def verify_key(cls, key):
         try:
             email = signing.loads(key, max_age=PASSCODE_EXPIRY, salt=settings.SECRET_KEY)
-            device = EmailDevice.objects.get(email=email)
+            service = EmailService.objects.get(email=email)
 
-        except (signing.SignatureExpired, signing.BadSignature, EmailDevice.DoesNotExist):
-            device = None
+        except (signing.SignatureExpired, signing.BadSignature, EmailService.DoesNotExist):
+            service = None
 
-        return device
+        return service
 
     def _render_subject(self, context):
         if hasattr(self, '_template_subject'):
@@ -177,8 +177,8 @@ class EmailUserMixin(AbstractUserMixin):
 
     @property
     def is_email_confirmed(self):
-        device = self.get_email_device()
-        return device.confirmed if device else False
+        service = self.get_email_service()
+        return service.confirmed if service else False
 
     def clean(self):
         super().clean()
@@ -186,19 +186,19 @@ class EmailUserMixin(AbstractUserMixin):
         if self.email:
             self.email = self.__class__.objects.normalize_email(self.email)
 
-    def get_email_device(self):
+    def get_email_service(self):
         email = getattr(self, 'email', '')
 
         try:
-            device = EmailDevice.objects.get(user=self, email=email)
-        except EmailDevice.DoesNotExist:
-            device = None
+            service = EmailService.objects.get(user=self, email=email)
+        except EmailService.DoesNotExist:
+            service = None
 
-        return device
+        return service
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        device = self.get_email_device()
-        device.send(
+        service = self.get_email_service()
+        service.send(
             to=self.email,
             subject=subject,
             message=message,
@@ -207,10 +207,10 @@ class EmailUserMixin(AbstractUserMixin):
 
     def verify_email(self, request=None):
         if getattr(self, 'email', None):
-            device = self.get_email_device()
+            service = self.get_email_service()
 
-            if not device:
-                device = EmailDevice(
+            if not service:
+                service = EmailService(
                     user=self,
                     name='default', # temporal
                     email=self.email,
@@ -218,34 +218,24 @@ class EmailUserMixin(AbstractUserMixin):
                     confirmed=False,
                 )
 
-                device.save()
+                service.save()
 
-            device.generate_challenge(request)
-            return device
+            service.generate_challenge(request)
+            return service
 
     def verify_email_token(self, token):
         if getattr(self, 'email', None):
-            device = self.get_email_device()
+            service = self.get_email_service()
 
-            if not device:
+            if not service:
                 return False
 
-            return device.verify_token(token) if token else False
-
-    # RESERVED
-    # @classmethod
-    # def verify_email_token(cls, email, token):
-    #     try:
-    #         device = EmailDevice.objects.get(email=email)
-    #     except:
-    #         return None
-
-    #     return device.user if device.verify_token(token) else None
+            return service.verify_token(token) if token else False
 
     @classmethod
     def verify_email_key(cls, key):
-        device = EmailDevice.verify_key(key)
-        return device.user if device else None
+        service = EmailService.verify_key(key)
+        return service.user if service else None
 
     def verify(self, request=None):
         super().verify(request)

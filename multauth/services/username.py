@@ -6,35 +6,19 @@ from django.conf import settings
 
 from django_otp.util import random_hex
 
-from .abstract import AbstractDevice, AbstractUserMixin, PASSCODE_EXPIRY
+from .abstract import AbstractService, AbstractUserMixin, PASSCODE_EXPIRY
 
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 
 
-class UsernameDevice(AbstractDevice):
-    username = models.CharField(max_length=150, unique=True)
-    # reserved # hardcode = models.CharField(max_length=128) # experimental
-
+class UsernameService(AbstractService):
     USER_MIXIN = 'UsernameUserMixin'
     IDENTIFIER_FIELD = 'username'
 
-    def __eq__(self, other):
-        if not isinstance(other, UsernameDevice):
-            return False
-
-        return self.username == other.username \
-            and self.key == other.key
-
-    def __hash__(self):
-        return hash((self.username,))
-
-    def is_interactive(self):
-        return False
-
-    def verify_is_allowed(self):
-        return (False, None)
+    class Meta:
+        abstract = True
 
 
 class UsernameUserMixin(AbstractUserMixin):
@@ -55,29 +39,14 @@ class UsernameUserMixin(AbstractUserMixin):
     def __str__(self):
         return str(getattr(self, 'username'))
 
-    @property
-    def is_username_confirmed(self):
-        device = self.get_username_device()
-        return device.confirmed if device else False
-
     def clean(self):
         super().clean()
 
         if self.username:
             self.username = self.__class__.objects.normalize_username(self.username)
 
-    def get_username_device(self):
-        username = getattr(self, 'username', '')
-
-        try:
-            device = UsernameDevice.objects.get(user=self, username=username)
-        except UsernameDevice.DoesNotExist:
-            device = None
-
-        return device
-
-    def verify_username(self, request=None):
-        pass
+    def get_username_service(self):
+        return None # todo: or UsernameService()?
 
     def verify(self, request=None):
         super().verify(request)
