@@ -196,6 +196,15 @@ class EmailUserMixin(AbstractUserMixin):
 
         return service
 
+    def check_email_passcode(self, passcode):
+        if getattr(self, 'email', None):
+            service = self.get_email_service()
+
+            if not service:
+                return False
+
+            return service.check_passcode(passcode) if passcode else False
+
     def email_user(self, subject, message, from_email=None, **kwargs):
         service = self.get_email_service()
         service.send(
@@ -222,15 +231,6 @@ class EmailUserMixin(AbstractUserMixin):
 
             service.generate_challenge(request)
             return service
-
-    def verify_email_token(self, token):
-        if getattr(self, 'email', None):
-            service = self.get_email_service()
-
-            if not service:
-                return False
-
-            return service.verify_token(token) if token else False
 
     @classmethod
     def verify_email_key(cls, key):

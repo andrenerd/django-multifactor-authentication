@@ -63,7 +63,7 @@ class SignupSerializer(serializers.ModelSerializer):
         # save extra services fields
         if data.get('hardcode', None):
             for service in user.get_services():
-                if service.has_hardcode:
+                if getattr(service, 'has_hardcode', False):
                     service.set_hardcode(data['hardcode'])
 
         data['user'] = user

@@ -20,7 +20,7 @@ class SignupVerificationEmailSerializer(serializers.Serializer):
         request = self.context.get('request')
         user = request.user
 
-        if user.verify_email_token(data.get('token')):
+        if user.check_email_passcode(data.get('token')):
             service = user.get_email_service()
             service.confirmed = True
             service.save()

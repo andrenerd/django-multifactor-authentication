@@ -29,7 +29,7 @@ from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_KEY_LENGTH', 20)
-MULTAUTH_SYNC = getattr(settings, 'MULTAUTH_DEVICE_AUTHENTICATOR_SYNC', True)
+MULTAUTH_SYNC = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_SYNC', True)
 MULTAUTH_THROTTLE_FACTOR = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_THROTTLE_FACTOR', 1)
 MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_SERVICE_AUTHENTICATOR_ISSUER', 'Multauth')
 
@@ -127,12 +127,10 @@ class AuthenticatorService(ThrottlingMixin, PasscodeServiceMixin, AbstractServic
 
     # see django_otp.plugins.otp_totp.models.TOTPService
     def verify_token(self, token):
-        print('!!!!AAAA')
         verify_allowed, _ = self.verify_is_allowed()
         if not verify_allowed:
             return False
 
-        print('!!!!BBBB')
         try:
             token = int(token)
         except Exception:
@@ -166,6 +164,14 @@ class AuthenticatorUserMixin(AbstractUserMixin):
     def __str__(self):
         return str(getattr(self, 'authenticator', ''))
 
+    def check_authenticator_passcode(self, passcode):
+        service = self.get_authenticator_service()
+
+        if not service:
+            return False
+
+        return service.check_passcode(passcode) if passcode else False
+
     def get_authenticator_service(self):
         try:
             service = AuthenticatorService.objects.get(user=self)
@@ -173,14 +179,6 @@ class AuthenticatorUserMixin(AbstractUserMixin):
             service = None
 
         return service
-
-    def verify_authenticator_token(self, token):
-        service = self.get_authenticator_service()
-
-        if not service:
-            return False
-
-        return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)

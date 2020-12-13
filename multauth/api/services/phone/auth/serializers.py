@@ -18,7 +18,7 @@ class SignupVerificationPhoneSerializer(serializers.Serializer):
         request = self.context.get('request')
         user = request.user
 
-        if user.verify_phone_token(data.get('token')):
+        if user.check_phone_passcode(data.get('token')):
             service = user.get_phone_service()
             service.confirmed = True
             service.save()

@@ -41,14 +41,15 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MULTAUTH_FLOWS = (
-    ('phone', 'hardcode', 'passcode',),
-    ('email', 'password', 'passcode',),
-    ('username', 'password',),
+    # pattern: ('identifier', 'secret1', 'secret2', ...)
+    ('phone', 'hardcode', 'passcode'),
+    ('email', 'password', 'passcode'),
+    ('username', 'password'),
     # ...etc
 )
 
 ```
-These flows mean, that user could be authenticated with any of these sets of crendials, ie set of `identfier` and `secrets`. For example, this one: ('email', 'password', 'passcode',). Usually only one set of credentials is used.
+The flows mean that user could be authenticated with any of these sets of crendials, ie set of `identfier` and `secrets`. For example, this one: ('email', 'password', 'passcode',). Number of flows could be any, but in most cases only one or two are used.
 
 
 Extra settings (optional):  
