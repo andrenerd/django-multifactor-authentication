@@ -1,6 +1,3 @@
-from functools import reduce
-from django_otp import match_token
-
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -14,7 +11,7 @@ from .mixins import UserServicesMixin
 
 # TODO: add MULTAUTH_ACTIVATED, as default 'is_active' field value
 # RESERVED # PASSWORD, PASSCODE, HARDCODE = 'password', 'passcode', 'hardcode'
-PASSCODE_DEVICE = getattr(settings, 'MULTAUTH_PASSCODE_DEVICE', None);
+PASSCODE_SERVICE = getattr(settings, 'MULTAUTH_PASSCODE_SERVICE', None);
 SECRETS = tuple(getattr(settings, 'MULTAUTH_SECRETS', (
     'password', 'passcode', 'hardcode',
 )));
@@ -68,22 +65,29 @@ class AbstractUser(AbstractBaseUser, UserServicesMixin, PermissionsMixin):
     def verify(self, request=None):
         super().verify(request)
 
+    # todo: refactor
     def set_passcode(self, service):
-        # TODO: think to apply PASSCODE_DEVICE
+        # TODO: think to apply PASSCODE_SERVICE
         if not service or not service.is_interactive:
-            raise self.__class__.DoesNotExist('No interactive service found')
+            raise self.__class__.DoesNotExist('No interactive service having passcode found')
 
         return service.generate_challenge()
 
-    def check_passcode(self, passcode, service=None):
-        # don't mess this "token" with authorization tokens
-        if service:
-            return service.verify_token(passcode)
-        else:
-            # TODO: what's this???
-            return bool(match_token(self, passcode))
+    def check_passcode(self, raw_passcode, service=None):
+        if not service:
+            services = [x for x in self.get_services() if getattr(x, 'has_passcode', False)]
 
-    # TODO: how about to make service required
+            for service in services:
+                if service.check_passcode(raw_passcode):
+                    return True
+
+            return False
+
+        if getattr(service, 'has_passcode', False):
+            return service.check_passcode(raw_passcode)
+        else:
+            return False
+
     def set_hardcode(self, raw_hardcode, service=None):
         if not user.pk:
             raise self.__class__.DoesNotExist('User should be saved, before setting hardcode')
@@ -99,13 +103,19 @@ class AbstractUser(AbstractBaseUser, UserServicesMixin, PermissionsMixin):
 
     def check_hardcode(self, raw_hardcode, service=None):
         if not service:
-            services = [x for x in self.get_services() if hasattr(x, 'hardcode')]
-            service = services[0] if services else None
+            services = [x for x in self.get_services() if getattr(x, 'has_hardcode', False)]
 
-        if not service or not service.has_hardcode:
-            raise self.__class__.DoesNotExist('No service having hardcode found')
+            for service in services:
+                if service.check_hardcode(raw_hardcode):
+                    return True
 
-        return service.check_hardcode(raw_hardcode)
+            return False
+
+        print('!!!!!22222', getattr(service, 'has_hardcode', False))
+        if getattr(service, 'has_hardcode', False):
+            return service.check_hardcode(raw_hardcode)
+        else:
+            return False
 
 
 class User(AbstractUser):

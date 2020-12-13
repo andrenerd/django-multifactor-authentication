@@ -18,7 +18,7 @@ class SignupVerificationWhatsappSerializer(serializers.Serializer):
         request = self.context.get('request')
         user = request.user
 
-        if user.verify_whatsapp_token(data.get('token')):
+        if user.check_whatsapp_passcode(data.get('token')):
             service = user.get_whatsapp_service()
             service.confirmed = True
             service.save()

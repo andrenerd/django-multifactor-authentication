@@ -8,7 +8,7 @@ from .abstract import AbstractService, HardcodeServiceMixin
 
 
 try:
-    ChipProvider = settings.MULTAUTH_DEVICE_CHIP_PROVIDER
+    ChipProvider = settings.MULTAUTH_SERVICE_CHIP_PROVIDER
 except AttributeError:
     from ..providers.bill import BillProvider
     ChipProvider = BillProvider
@@ -16,7 +16,7 @@ except AttributeError:
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_DEVICE_CHIP_TEMPLATE_NAME', 'chip')
+MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_SERVICE_CHIP_TEMPLATE_NAME', 'chip')
 
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 

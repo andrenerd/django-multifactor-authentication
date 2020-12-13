@@ -16,38 +16,12 @@ class AbstractService(models.Model):
     USER_MIXIN = None # required
     IDENTIFIER_FIELD = None # required
 
-    _hardcode = None # see _password attribure in AbstractBaseUser
-
     class Meta:
         app_label = 'multauth'
         abstract = True
 
     # def __str__(self):
     #   raise NotImplementedError
-
-    @property
-    def has_hardcode(self):
-        return hasattr(self, 'hardcode')
-
-    # based on check_hardcode from django.contrib.auth.hashers
-    def set_hardcode(self, raw_hardcode):
-        if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
-
-        self.hardcode = make_password(raw_hardcode)
-        # reserved # self._hardcode = raw_hardcode
-
-    # based on check_hardcode from django.contrib.auth.hashers
-    def check_hardcode(self, raw_hardcode):
-        if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
-
-        def setter(raw_hardcode):
-            self.set_hardcode(raw_hardcode)
-            self._hardcode = None
-            self.save(update_fields=['hardcode'])
-
-        return check_password(raw_hardcode, self.hardcode, setter)
 
 
 class PasscodeServiceMixin(SideChannelDevice):
@@ -57,11 +31,19 @@ class PasscodeServiceMixin(SideChannelDevice):
 
     def generate_token(self, length=PASSCODE_LENGTH, valid_secs=PASSCODE_EXPIRY):
         """
+        django_otp:
         Service token, or one-time password, is used under name "passcode".
         To not mess it with authorization token.
         (term "token" is derived from device_otp package and kept for Services)
         """
         super().generate_token(length, valid_secs)
+
+    @property
+    def has_passcode(self):
+        return True
+
+    def check_passcode(self, raw_passcode):
+        return bool(self.verify_token(raw_passcode))
 
 
 class HardcodeServiceMixin():
@@ -73,21 +55,15 @@ class HardcodeServiceMixin():
 
     @property
     def has_hardcode(self):
-        return hasattr(self, 'hardcode')
+        return True
 
     # based on check_hardcode from django.contrib.auth.hashers
     def set_hardcode(self, raw_hardcode):
-        if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
-
         self.hardcode = make_password(raw_hardcode)
         # reserved # self._hardcode = raw_hardcode
 
     # based on check_hardcode from django.contrib.auth.hashers
     def check_hardcode(self, raw_hardcode):
-        if not self.has_hardcode:
-            raise self.__class__.FieldDoesNotExist('Hardcode not supported by the service')
-
         def setter(raw_hardcode):
             self.set_hardcode(raw_hardcode)
             self._hardcode = None

@@ -8,7 +8,7 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django_otp.util import random_hex
 
-from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
+from .abstract import AbstractService, PasscodeServiceMixin, HardcodeServiceMixin, AbstractUserMixin
 
 
 try:
@@ -27,7 +27,7 @@ MULTAUTH_TEMPLATE_NAME = getattr(settings, 'MULTAUTH_SERVICE_PHONE_TEMPLATE_NAME
 TEMPLATE_MESSAGE_SUFFIX = '.txt'
 
 
-class PhoneService(PasscodeServiceMixin, AbstractService):
+class PhoneService(PasscodeServiceMixin, HardcodeServiceMixin, AbstractService):
     """
     Could be also called as SmsService
     # todo: rename to SmsService? add VoiceService? No!
@@ -126,6 +126,15 @@ class PhoneUserMixin(AbstractUserMixin):
 
         return service
 
+    def check_phone_passcode(self, passcode):
+        if getattr(self, 'phone', None):
+            service = self.get_phone_service()
+
+            if not service:
+                return False
+
+            return service.check_passcode(passcode) if passcode else False
+
     def verify_phone(self, request=None):
         if getattr(self, 'phone', None):
             service = self.get_phone_service()
@@ -143,15 +152,6 @@ class PhoneUserMixin(AbstractUserMixin):
 
             service.generate_challenge(request)
             return service
-
-    def verify_phone_token(self, token):
-        if getattr(self, 'phone', None):
-            service = self.get_phone_service()
-
-            if not service:
-                return False
-
-            return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)

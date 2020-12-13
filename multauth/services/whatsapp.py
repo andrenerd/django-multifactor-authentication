@@ -119,6 +119,15 @@ class WhatsappUserMixin(AbstractUserMixin):
 
         return service
 
+    def check_whatsapp_passcode(self, passcode):
+        if getattr(self, 'whatsapp', None):
+            service = self.get_whatsapp_service()
+
+            if not service:
+                return False
+
+            return service.check_passcode(passcode) if passcode else False
+
     def verify_whatsapp(self, request=None):
         if getattr(self, 'whatsapp', None):
             service = self.get_whatsapp_service()
@@ -136,15 +145,6 @@ class WhatsappUserMixin(AbstractUserMixin):
 
             service.generate_challenge(request)
             return service
-
-    def verify_whatsapp_token(self, token):
-        if getattr(self, 'whatsapp', None):
-            service = self.get_whatsapp_service()
-
-            if not service:
-                return False
-
-            return service.verify_token(token) if token else False
 
     def verify(self, request=None):
         super().verify(request)
