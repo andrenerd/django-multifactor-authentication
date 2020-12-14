@@ -57,6 +57,9 @@ class EmailService(PasscodeServiceMixin, AbstractService):
     def __hash__(self):
         return hash((self.email,))
 
+    def set_passcode(self):
+        self.generate_challenge()
+
     def generate_challenge(self, request=None):
         self.generate_token()
         key = signing.dumps(self.email, salt=settings.SECRET_KEY) # for verification url only
