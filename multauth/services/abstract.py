@@ -38,9 +38,10 @@ class PasscodeServiceMixin(SideChannelDevice):
         """
         super().generate_token(length, valid_secs)
 
-    @property
-    def has_passcode(self):
-        return True
+    # obsoleted
+    # @property
+    # def has_passcode(self):
+    #     return True
 
     def check_passcode(self, raw_passcode):
         return bool(self.verify_token(raw_passcode))
@@ -53,9 +54,10 @@ class HardcodeServiceMixin():
         app_label = 'multauth'
         abstract = True
 
-    @property
-    def has_hardcode(self):
-        return True
+    # obsoleted
+    # @property
+    # def has_hardcode(self):
+    #     return True
 
     # based on check_hardcode from django.contrib.auth.hashers
     def set_hardcode(self, raw_hardcode):

@@ -47,6 +47,9 @@ class WhatsappService(PasscodeServiceMixin, AbstractService):
     def clean(self):
         super().clean()
 
+    def set_passcode(self):
+        self.generate_challenge()
+
     def generate_challenge(self, request=None):
         self.generate_token()
 
