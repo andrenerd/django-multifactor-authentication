@@ -40,7 +40,7 @@ class SigninPasscodeWhatsappSerializer(serializers.Serializer):
         if whatsapp:
             try:
                 service = WhatsappService.objects.get(whatsapp=whatsapp)
-                service.generate_challenge()
+                service.set_passcode()
             except WhatsappService.DoesNotExist:
                 pass
 
