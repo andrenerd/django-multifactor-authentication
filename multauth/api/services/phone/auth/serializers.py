@@ -43,7 +43,7 @@ class SigninPasscodePhoneSerializer(serializers.Serializer):
             try:
                 service = PhoneService.objects.get(phone=phone)
                 if not hardcode or service.check_hardcode(hardcode):
-                    service.generate_challenge()
+                    service.set_passcode()
             except PhoneService.DoesNotExist:
                 pass
 

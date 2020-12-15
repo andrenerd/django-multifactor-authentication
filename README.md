@@ -4,11 +4,11 @@
 [![pypi version](https://img.shields.io/pypi/v/django-multifactor-authentication.svg)](https://pypi.org/project/django-multifactor-authentication/)
 
 
-Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases. Easily configurable and extendable with new authentication methods or services. Authenticaton scenarios, called `flows`, are based on `identifiers` and `secrets`, which can be used or not used in multiple combinations:
+Flexible authentication for web, mobile, desktop and hybrid apps. Can be used for 1fa, 2fa and mfa scenarios. Easily configurable and extendable with new authentication methods, called `services`. All authenticaton scenarios, called `flows`, are based on `identifiers` and `secrets`, which can be used or not used in multiple combinations:
 - username, email, phone, ...
-- password, passcode (one-time pass or token), hardcode (device or card id), ...
+- password, passcode (aka one-time pass or token), hardcode (aka device or card id), ...
 
-Full list of supported services and corresponding identifiers:
+Full list of supported services (devices):
 - Email
 - Phone (as Sms)
 - WhatsApp
@@ -23,7 +23,6 @@ and service providers:
 - Vonage (Nexmo)
 - Amazon SNS (soon)
 - ...add yours
-
 
 
 
@@ -49,7 +48,6 @@ MULTAUTH_FLOWS = (
 )
 
 ```
-The flows mean that user could be authenticated with any of these sets of crendials, ie set of `identfier` and `secrets`. For example, this one: ('email', 'password', 'passcode',). Number of flows could be any, but in most cases only one or two are used.
 
 
 Extra settings (optional):  
@@ -64,7 +62,6 @@ MULTAUTH_SERVICES = [
 MULTAUTH_DEBUG = True # False by default
 MULTAUTH_PASSCODE_LENGTH = 6 # size in digits
 MULTAUTH_PASSCODE_EXPIRY = 3600 # time in seconds
-MULTAUTH_PASSCODE_SERVICE = 'multauth.services.PhoneService' # by default
 
 MULTAUTH_SERVICE_EMAIL_PROVIDER = 'multauth.providers.MailProvider' # by default
 MULTAUTH_SERVICE_PHONE_PROVIDER = 'multauth.providers.TwilioProvider' # by default

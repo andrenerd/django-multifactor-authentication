@@ -68,7 +68,7 @@ class SigninPasscodeEmailSerializer(serializers.Serializer):
         if email:
             try:
                 service = EmailService.objects.get(email=email)
-                service.generate_challenge()
+                service.set_passcode()
             except EmailService.DoesNotExist:
                 pass
 
