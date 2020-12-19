@@ -46,7 +46,6 @@ MULTAUTH_FLOWS = (
     ('username', 'password'),
     # ...etc
 )
-
 ```
 
 
@@ -125,15 +124,7 @@ or model methods:
 - ...
 
 And to complete verification process call api endpoints:
-- `multauth:signup-verification-phone` to post the token
-- `multauth:signup-verification-email` to post the token
+- `multauth:signup-verification-phone` to post the token (ie passcode)
+- `multauth:signup-verification-email` to post the token (ie passcode)
 - `multauth:signup-verification-email-key` as a classic in-email link to pass the key
 - ...
-
-or model methods:
-- `user.verify_phone_token`
-- `user.verify_email_token`
-- `user.verify_email_key`
-- ...
-
-
