@@ -15,26 +15,13 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = (
-    #'debug_toolbar',
     'django.contrib.sites',
-
-    'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    #'django.contrib.humanize',
-
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
 
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg', # for dev only
-    'localflavor',
 
     'multauth',
     'example',
@@ -42,23 +29,12 @@ INSTALLED_APPS = (
 
 MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
     },
 ]
 
@@ -174,15 +150,22 @@ SWAGGER_SETTINGS = {
 }
 
 
-# MultAuth
-AUTH_USER_MODEL = 'example.User'
+# Multauth
+AUTH_USER_MODEL = 'multauth.User'
 
 AUTHENTICATION_BACKENDS = (
-    'multauth.backends.UserBackend',
+    'multauth.backends.ModelBackend',
+)
+
+MULTAUTH_SERVICES = [
+  'multauth.services.EmailService',
+  'multauth.services.AuthenticatorService',
+]
+
+MULTAUTH_FLOWS = (
+    ('email', 'password', 'passcode'),
 )
 
 MULTAUTH_DEBUG = False
-MULTAUTH_TOKEN_LENGTH = 6 # digits
-MULTAUTH_TOKEN_EXPIRY = 3600 * 24 * 3 # days
-
-
+MULTAUTH_PASSCODE_LENGTH = 6 # digits
+MULTAUTH_PASSCODE_EXPIRY = 3600 * 24 * 3 # days
