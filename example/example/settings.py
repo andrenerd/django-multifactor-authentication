@@ -17,8 +17,8 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.contenttypes',
+    'django.contrib.auth',
 
-    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg', # for dev only
