@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 # from ..permissions import IsCustomUser # EXAMPLE
-from ..authentication import TokenInactiveAuthentication
+# obsoleted # from ..authentication import TokenInactiveAuthentication
 from . import serializers
 
 
@@ -99,7 +99,7 @@ class SignupView(views.APIView):
 
 
 class SignupVerificationView(views.APIView):
-    authentication_classes = (TokenInactiveAuthentication,)
+    # obsoleted # authentication_classes = (TokenInactiveAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.SignupVerificationSerializer
 
