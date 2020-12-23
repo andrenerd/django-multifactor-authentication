@@ -14,7 +14,7 @@ __all__ = (
 
 
 class SignupVerificationEmailSerializer(serializers.Serializer):
-    token = serializers.CharField() # aka one-time-passcode
+    token = serializers.CharField() # aka passcode
 
     def validate(self, data):
         request = self.context.get('request')

@@ -14,17 +14,18 @@ class TokenQueryAuthentication(authentication.TokenAuthentication):
             super(TokenQueryAuthentication, self).authenticate(request)
 
 
-class TokenInactiveAuthentication(authentication.TokenAuthentication):
-    """
-    Let to authenticate non active users by extra tokens (not the main one)
-    Supposed to be used by specific endpoints only (signup, etc)
-    """
-    def authenticate_credentials(self, key):
-        model = self.get_model()
+# obsoleted
+# class TokenInactiveAuthentication(authentication.TokenAuthentication):
+#     """
+#     Let to authenticate non active users by extra tokens (not the main one)
+#     Supposed to be used by specific endpoints only (signup, etc)
+#     """
+#     def authenticate_credentials(self, key):
+#         model = self.get_model()
 
-        try:
-            token = model.objects.select_related('user').get(key=key)
-        except model.DoesNotExist:
-            raise exceptions.AuthenticationFailed(_('Invalid token.'))
+#         try:
+#             token = model.objects.select_related('user').get(key=key)
+#         except model.DoesNotExist:
+#             raise exceptions.AuthenticationFailed(_('Invalid token.'))
 
-        return (token.user, token)
+#         return (token.user, token)

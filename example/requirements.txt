@@ -1,0 +1,4 @@
+django>=2.2.0, <4.0.0
+djangorestframework>=3.10.3, <4.0.0
+django-multifactor-authentication
+drf_yasg # demo only

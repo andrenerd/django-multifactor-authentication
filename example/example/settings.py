@@ -11,14 +11,15 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'xxx')
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    # 'multauth.com',
+    'multauth.andrenerd.me',
 ]
 
 INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.contenttypes',
+    'django.contrib.staticfiles',
+    'django.contrib.auth',
 
-    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg', # for dev only
@@ -87,7 +88,6 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
-    'EXCEPTION_HANDLER': 'multauth.api.handlers.api_exception_handler',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 

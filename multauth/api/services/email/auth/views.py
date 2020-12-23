@@ -8,13 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 # from ..permissions import IsCustomUser # EXAMPLE
-from .. import TokenInactiveAuthentication
 from .. import auth_serializers
 from . import serializers
 
 
 class SignupVerificationEmailView(views.APIView):
-    authentication_classes = (TokenInactiveAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.SignupVerificationEmailSerializer
 
