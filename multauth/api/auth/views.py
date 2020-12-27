@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 
 # from ..permissions import IsCustomUser # EXAMPLE
 # obsoleted # from ..authentication import TokenInactiveAuthentication
+from ..decorators import swagger_auto_schema
 from . import serializers
 
 
@@ -21,14 +22,14 @@ class SigninView(views.APIView):
         parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
 
-    # @swagger_auto_schema(
-    #     operation_description='Signin user',
-    #     request_body=serializers.SigninSerializer,
-    #     responses={
-    #         200: serializers.TokenSerializer,
-    #         400: 'Unable to login with provided credentials',
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='Signin user',
+        request_body=serializers.SigninSerializer,
+        responses={
+            200: serializers.TokenSerializer,
+            400: 'Unable to login with provided credentials',
+        }
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
