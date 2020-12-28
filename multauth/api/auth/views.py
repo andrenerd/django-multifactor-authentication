@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 
 # from ..permissions import IsCustomUser # EXAMPLE
 # obsoleted # from ..authentication import TokenInactiveAuthentication
+from ..decorators import swagger_auto_schema
 from . import serializers
 
 
@@ -21,14 +22,14 @@ class SigninView(views.APIView):
         parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
 
-    # @swagger_auto_schema(
-    #     operation_description='Signin user',
-    #     request_body=serializers.SigninSerializer,
-    #     responses={
-    #         200: serializers.TokenSerializer,
-    #         400: 'Unable to login with provided credentials',
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='Signin user',
+        request_body=serializers.SigninSerializer,
+        responses={
+            200: serializers.TokenSerializer,
+            400: 'Unable to login with provided credentials',
+        }
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -56,15 +57,15 @@ class SignupView(views.APIView):
     permission_classes = (AllowAny,)
     serializer_class = serializers.SignupSerializer
 
-    # @swagger_auto_schema(
-    #     operation_description='Signup user',
-    #     request_body=serializers.SignupSerializer,
-    #     responses={
-    #         201: serializers.TokenSerializer,
-    #         400: 'Error...',
-    #         409: 'Conflict: duplicate user...',
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='Signup user',
+        request_body=serializers.SignupSerializer,
+        responses={
+            201: serializers.TokenSerializer,
+            400: 'Error...',
+            409: 'Conflict: duplicate user...',
+        }
+    )
     @transaction.atomic
     def post(self, request):
         data = request.data
@@ -103,13 +104,13 @@ class SignupVerificationView(views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.SignupVerificationSerializer
 
-    # @swagger_auto_schema(
-    #     operation_description='Repeat verification',
-    #     request_body=serializers.SignupVerificationSerializer,
-    #     responses={
-    #         200: serializers.SignupVerificationUserSerializer,
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='Repeat verification',
+        request_body=serializers.SignupVerificationSerializer,
+        responses={
+            200: serializers.SignupVerificationUserSerializer,
+        }
+    )
     @transaction.atomic
     def post(self, request):
         user = request.user
