@@ -5,14 +5,13 @@ try:
 
 except ImportError:
     from functools import wraps
-    from django.utils.decorators import available_attrs
 
     def swagger_auto_schema(function=None, **kwargs):
         """
         Dummy decorator when drf_yasg is not present.
         """
         def decorator(view_func):
-            @wraps(view_func, assigned=available_attrs(view_func))
+            @wraps(view_func)
             def _wrapped_view(request, *args, **kwargs):
                 return view_func(request, *args, **kwargs)
             return _wrapped_view
