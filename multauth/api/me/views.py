@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # from ..permissions import IsCustomUser
+from ..decorators import swagger_auto_schema
 from . import serializers
 
 
@@ -13,28 +14,28 @@ class MeView(views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserSerializer
 
-    # @swagger_auto_schema(
-    #     operation_description='Get user details',
-    #     responses={
-    #         200: serializers.UserSerializer,
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='Get user details',
+        responses={
+            200: serializers.UserSerializer,
+        }
+    )
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(user)
         return Response(serializer.data)
 
-    # @swagger_auto_schema(
-    #     operation_description='''
-    #         Set user details.
-    #         Credential fields, such as phone and email
-    #         could be update with initial values (ie once) only.
-    #     ''',
-    #     request_body=serializers.UserSerializer,
-    #     responses={
-    #         200: serializers.UserSerializer,
-    #     }
-    # )
+    @swagger_auto_schema(
+        operation_description='''
+            Set user details.
+            Credential fields, such as phone and email
+            could be update with initial values (ie once) only.
+        ''',
+        request_body=serializers.UserSerializer,
+        responses={
+            200: serializers.UserSerializer,
+        }
+    )
     @transaction.atomic
     def post(self, request):
         data = request.data
@@ -53,10 +54,10 @@ class MeView(views.APIView):
 class MePasswordView(views.APIView):
     permission_classes = (IsAuthenticated,)
 
-    # @swagger_auto_schema(
-    #     operation_description='Set user password',
-    #     request_body=serializers.UserPasswordSerializer,
-    # )
+    @swagger_auto_schema(
+        operation_description='Set user password',
+        request_body=serializers.UserPasswordSerializer,
+    )
     def post(self, request):
         user = request.user
         serializer = serializers.UserPasswordSerializer(data=request.data)
@@ -74,10 +75,10 @@ class MePasswordView(views.APIView):
 class MePasscodeView(views.APIView):
     permission_classes = (IsAuthenticated,)
 
-    # @swagger_auto_schema(
-    #     operation_description='Set or check user passcode',
-    #     request_body=serializers.UserPasscodeSerializer,
-    # )
+    @swagger_auto_schema(
+        operation_description='Set or check user passcode',
+        request_body=serializers.UserPasscodeSerializer,
+    )
     def post(self, request):
         user = request.user
         serializer = serializers.UserPasscodeSerializer(data=request.data)

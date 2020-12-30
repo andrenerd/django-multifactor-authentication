@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from multauth.services import AuthenticatorService
 # from ..permissions import IsCustomUser
+from .. import swagger_auto_schema
 from . import serializers
 
 
