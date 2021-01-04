@@ -3,18 +3,17 @@ from boto3 import Session
 
 from .abstract import AbstractProvider
 
+# reserved # amazon_from = getattr(settings, 'MULTAUTH_PROVIDER_AMAZON_BRAND_NAME', None)
 
-AMAZON_API_KEY = getattr(settings, 'MULTAUTH_PROVIDER_AMAZON_API_KEY', None)
-AMAZON_API_SECRET = getattr(settings, 'MULTAUTH_PROVIDER_AMAZON_API_SECRET', None)
-amazon_from = getattr(settings, 'MULTAUTH_PROVIDER_AMAZON_BRAND_NAME', None)
-
-if AMAZON_API_KEY:
-    client = Client(key=AMAZON_API_KEY, secret=AMAZON_API_SECRET)
+# todo: check Session
+if True:
+    client = Session().client('sns')
 else:
     print('Amazon: running in mock mode. Set "account sid" and other params.')
     client = None
 
 
+# https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns.html#SNS.Client.publish
 class AmazonProvider(AbstractProvider):
 
     def __init__(self, to, message='', *args, **kwargs):
@@ -33,15 +32,16 @@ class AmazonProvider(AbstractProvider):
             return
 
         if client:
-            sms = Sms(client)
-            response = sms.send_message({
-                'to': self.to,
-                'from': amazon_from,
-                'text': self.message,
-            })
+            try:
+                client.publish(
+                    PhoneNumber=self.to,
+                    Message=self.message,
+                )
 
-            # todo:
-            # catch errors in response
-            # {'message-count': '1', 'messages': [{'status': '2', 'error-text': 'Missing Message Text'}]}
+            except Exception as e:
+                # todo:
+                # specify catcher and created exception
+                raise
+
         else:
             print('Amazon: to %s, message "%s"' % (self.to, self.message))
