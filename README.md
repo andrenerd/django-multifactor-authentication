@@ -21,7 +21,7 @@ Full list of supported services (devices):
 and service providers:  
 - Twilio
 - Vonage (Nexmo)
-- Amazon SNS (soon)
+- Amazon SNS
 - ...add yours
 
 
