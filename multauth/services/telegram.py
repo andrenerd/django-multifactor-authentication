@@ -1,3 +1,5 @@
+import telebot 
+
 from django.db import models
 from django.utils.module_loading import import_string
 from django.template.loader import get_template
