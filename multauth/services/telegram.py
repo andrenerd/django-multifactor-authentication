@@ -1,4 +1,5 @@
 import telebot 
+from telethon import TelegramClient
 
 from django.db import models
 from django.utils.module_loading import import_string
