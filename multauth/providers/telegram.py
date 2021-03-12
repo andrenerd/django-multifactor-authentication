@@ -5,18 +5,18 @@ import telebot
 from .abstract import AbstractProvider
 
 
-TELEGRAM_ACCOUNT_ID = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_ACCOUNT_ID', None)
-TELEGRAM_ACCOUNT_HASH = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_ACCOUNT_HASH', None)
+TELEGRAM_API_ID = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_API_ID', None)
+TELEGRAM_API_HASH = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_API_HASH', None)
 TELEGRAM_BOT_TOKEN = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_BOT_TOKEN', None)
 telegram_from = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_CALLER_ID', None)
 telegram_whatsapp_prefix = 'whatsapp:'
 
 # see
 # https://core.telegram.org/api/obtaining_api_id
-if TELEGRAM_ACCOUNT_ID:
-    client = Client(TELEGRAM_ACCOUNT_ID, TELEGRAM_AUTH_TOKEN)
+if TELEGRAM_API_ID:
+    client = TelegramClient('session', TELEGRAM_API_ID, TELEGRAM_API_HASH) 
 else:
-    print('Telegram: running in mock mode. Set "account sid" and other params.')
+    print('Telegram: running in mock mode. Set "api id" and other params.')
     client = None
 
 
