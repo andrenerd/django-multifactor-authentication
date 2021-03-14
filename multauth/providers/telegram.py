@@ -9,7 +9,6 @@ TELEGRAM_API_ID = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_API_ID', None)
 TELEGRAM_API_HASH = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_API_HASH', None)
 TELEGRAM_BOT_TOKEN = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_BOT_TOKEN', None)
 telegram_from = getattr(settings, 'MULTAUTH_PROVIDER_TELEGRAM_CALLER_ID', None)
-telegram_whatsapp_prefix = 'whatsapp:'
 
 # see
 # https://core.telegram.org/api/obtaining_api_id
