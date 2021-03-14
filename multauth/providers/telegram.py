@@ -41,15 +41,9 @@ class TelegramProvider(AbstractProvider):
             return
 
         if client:
-            # experimental
-            if self.to.startswith(telegram_whatsapp_prefix): 
-                from_ = telegram_whatsapp_prefix + telegram_from
-            else:
-                from_ = telegram_from
-
             client.messages.create(
                 to=self.to,
-                from_=from_,
+                from_=telegram_from,
                 body=self.message,
             )
         else:
