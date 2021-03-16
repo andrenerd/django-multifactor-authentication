@@ -42,6 +42,9 @@ class TelegramProvider(AbstractProvider):
         if client:
             client.connect()
 
+            if not client.is_user_authorized():
+                client.sign_in(bot_token=TELEGRAM_BOT_TOKEN)
+
             client.messages.create(
                 to=self.to,
                 from_=telegram_from,
