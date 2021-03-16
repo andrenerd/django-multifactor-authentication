@@ -40,6 +40,8 @@ class TelegramProvider(AbstractProvider):
             return
 
         if client:
+            client.connect()
+
             client.messages.create(
                 to=self.to,
                 from_=telegram_from,
