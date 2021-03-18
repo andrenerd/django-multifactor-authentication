@@ -49,5 +49,7 @@ class TelegramProvider(AbstractProvider):
             except Exception as e:
                 pass
 
+            client.disconnect() 
+
         else:
             print('Telegram: to %s, message "%s"' % (self.to, self.message))
