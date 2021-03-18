@@ -34,7 +34,6 @@ class TelegramProvider(AbstractProvider):
 
     # todo:
     # handle exceptions
-    # https://github.com/telegram/telegram-python/#handling-exceptions
     def _send(self):
         if not self.to:
             return
@@ -45,10 +44,10 @@ class TelegramProvider(AbstractProvider):
             if not client.is_user_authorized():
                 client.sign_in(bot_token=TELEGRAM_BOT_TOKEN)
 
-            client.messages.create(
-                to=self.to,
-                from_=telegram_from,
-                body=self.message,
-            )
+            try:
+                client.send_message(self.to, self.message)
+            except Exception as e:
+                pass
+
         else:
             print('Telegram: to %s, message "%s"' % (self.to, self.message))
