@@ -13,10 +13,9 @@ from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 try:
     TelegramProviderPath = settings.MULTAUTH_SERVICE_TELEGRAM_PROVIDER
-    TelegramProvider = import_string(TelegramProviderPath) # ex. multauth.providers.VonageProvider
+    TelegramProvider = import_string(TelegramProviderPath) # ex. multauth.providers.TelegramProvider
 except AttributeError:
-    from ..providers.twilio import TwilioProvider
-    TelegramProvider = TwilioProvider
+    from ..providers.telegram import TelegramProvider
 
 
 DEBUG = getattr(settings, 'DEBUG', False)
