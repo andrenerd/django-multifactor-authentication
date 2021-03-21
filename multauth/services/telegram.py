@@ -64,7 +64,7 @@ class TelegramService(PasscodeServiceMixin, AbstractService):
 
             if message:
                 TelegramProvider(
-                    to='telegram:' + self.telegram.as_e164,
+                    to=self.telegram.as_e164,
                     message=message,
                 ).send()
 
@@ -93,7 +93,7 @@ class TelegramService(PasscodeServiceMixin, AbstractService):
 
 class TelegramUserMixin(AbstractUserMixin):
 
-    telegram = PhoneNumberField(_('WhatsApp identifier'), blank=True, null=True, unique=True,
+    telegram = PhoneNumberField(_('Telegram identifier'), blank=True, null=True, unique=True,
         # help_text = _('Required.'),
         error_messages = {
             'unique': _('A user with that Telegram identifier already exists.'),
