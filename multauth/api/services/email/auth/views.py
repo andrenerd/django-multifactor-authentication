@@ -43,7 +43,7 @@ class SignupVerificationEmailKeyView(views.APIView):
     @swagger_auto_schema(
         operation_description='User email (by key) verification',
         responses={
-            200: auth_serializers.SignupVerificationEmailKeySerializer,
+            200: serializers.SignupVerificationEmailKeySerializer,
         }
     )
     @transaction.atomic

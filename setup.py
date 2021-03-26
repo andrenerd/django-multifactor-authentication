@@ -11,7 +11,7 @@ def read(f):
 setup(
     name='django-multifactor-authentication',
     keywords='django authentication multifactor mfa 2fa 3fa user signin signup otp google microsoft authenticator authy andotp whatsapp telegram yubikey twillio sendgrid nexmo sns',
-    version='2.0.1',
+    version='2.1.0',
     url='https://github.com/andrenerd/django-multifactor-authentication',
     license='BSD',
     description='Flexible authentication for web, mobile, desktop and hybrid apps. It can be used for 1fa, 2fa and mfa cases.',
@@ -30,7 +30,8 @@ setup(
         'api': ['djangorestframework>=3.10.3, <4.0.0'],
         'twilio': ['twilio'],
         'vonage': ['vonage'],
-        'telegram': ['telebot', 'telethon'],
+        'amazon': ['boto3'],
+        'telegram': ['telethon'],
         'authenticator': ['qrcode>=4.0'],
     },
     python_requires='>=3.5',

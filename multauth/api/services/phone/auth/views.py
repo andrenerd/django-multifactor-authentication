@@ -17,7 +17,7 @@ class SignupVerificationPhoneView(views.APIView):
 
     @swagger_auto_schema(
         operation_description='User phone verification',
-        request_body=auth_serializers.SignupVerificationPhoneSerializer,
+        request_body=serializers.SignupVerificationPhoneSerializer,
         responses={
             200: auth_serializers.SignupVerificationUserSerializer,
         }
