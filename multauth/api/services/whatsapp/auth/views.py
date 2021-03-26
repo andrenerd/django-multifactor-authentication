@@ -17,7 +17,7 @@ class SignupVerificationWhatsappView(views.APIView):
 
     @swagger_auto_schema(
         operation_description='User WhatsApp verification',
-        request_body=auth_serializers.SignupVerificationWhatsappSerializer,
+        request_body=serializers.SignupVerificationWhatsappSerializer,
         responses={
             200: auth_serializers.SignupVerificationUserSerializer,
         }
