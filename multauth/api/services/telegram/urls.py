@@ -7,4 +7,3 @@ urlpatterns = [
     path('signup/verification/telegram/', auth_views.SignupVerificationTelegramView.as_view(), name='signup-verification-telegram'),
     path('signin/passcode/telegram/', auth_views.SigninPasscodeTelegramView.as_view(), name='signin-passcode-telegram'),
 ]
-
