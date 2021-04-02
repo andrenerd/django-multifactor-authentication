@@ -31,7 +31,7 @@ setup(
         'twilio': ['twilio'],
         'vonage': ['vonage'],
         'amazon': ['boto3'],
-        'telegram': ['telethon'],
+        # reserved # 'telegram': ['telethon'],
         'authenticator': ['qrcode>=4.0'],
     },
     python_requires='>=3.5',
