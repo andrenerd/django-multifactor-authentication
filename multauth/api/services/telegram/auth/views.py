@@ -11,13 +11,13 @@ from .. import auth_serializers
 from . import serializers
 
 
-class SignupVerificationPhoneView(views.APIView):
+class SignupVerificationTelegramView(views.APIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = serializers.SignupVerificationPhoneSerializer
+    serializer_class = serializers.SignupVerificationTelegramSerializer
 
     @swagger_auto_schema(
-        operation_description='User phone verification',
-        request_body=serializers.SignupVerificationPhoneSerializer,
+        operation_description='User Telegram verification',
+        request_body=serializers.SignupVerificationTelegramSerializer,
         responses={
             200: auth_serializers.SignupVerificationUserSerializer,
         }
@@ -33,12 +33,12 @@ class SignupVerificationPhoneView(views.APIView):
         return Response(serializer.data)
 
 
-class SigninPasscodePhoneView(views.APIView):
+class SigninPasscodeTelegramView(views.APIView):
     @swagger_auto_schema(
-        operation_description='Send signin passcode to service:phone',
-        request_body=serializers.SigninPasscodePhoneSerializer,
+        operation_description='Send signin passcode to service:telegram',
+        request_body=serializers.SigninPasscodeTelegramSerializer,
     )
     def post(self, request):
-        serializer = serializers.SigninPasscodePhoneSerializer(data=request.data)
+        serializer = serializers.SigninPasscodeTelegramSerializer(data=request.data)
         serializer.is_valid(raise_exception=False) # no exceptions here
         return Response(status=status.HTTP_200_OK)
