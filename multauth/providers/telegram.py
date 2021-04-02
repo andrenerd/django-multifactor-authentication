@@ -1,5 +1,5 @@
 from django.conf import settings
-from telethon import TelegramClient
+from telethon.sync import TelegramClient
 # import telebot # todo: is it really needed?
 
 from .abstract import AbstractProvider
