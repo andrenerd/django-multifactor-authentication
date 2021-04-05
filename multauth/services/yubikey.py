@@ -28,7 +28,7 @@ from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 DEBUG = getattr(settings, 'DEBUG', False)
 MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
-# MULTAUTH_KEY_LENGTH = getattr(settings, 'MULTAUTH_SERVICE_YUBIKEY_KEY_LENGTH', 20)
+MULTAUTH_PRIVATE_ID_LENGTH = getattr(settings, 'MULTAUTH_SERVICE_YUBIKEY_PRIVATE_ID_LENGTH', 6)
 # MULTAUTH_SYNC = getattr(settings, 'MULTAUTH_SERVICE_YUBIKEY_SYNC', True)
 # MULTAUTH_THROTTLE_FACTOR = getattr(settings, 'MULTAUTH_SERVICE_YUBIKEY_THROTTLE_FACTOR', 1)
 # MULTAUTH_ISSUER = getattr(settings, 'MULTAUTH_SERVICE_YUBIKEY_ISSUER', 'Multauth')
@@ -44,7 +44,16 @@ MULTAUTH_DEBUG = getattr(settings, 'MULTAUTH_DEBUG', DEBUG)
 #     return hex_validator()(value)
 
 
+def private_id_generator():
+    return force_text(random_hex(MULTAUTH_PRIVATE_ID_LENGTH))
+
+
+def private_id_validator(value):
+    return hex_validator(MULTAUTH_PRIVATE_ID_LENGTH)(value)
+
+
 class YubikeyService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
+
     # see django_otp.plugins.otp_totp.models.TOTPService
     # key = models.CharField(max_length=80, validators=[key_validator], default=key_generator) # a hex-encoded secret key of up to 40 bytes
     # step = models.PositiveSmallIntegerField(default=30) # the time step in seconds.
