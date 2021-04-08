@@ -52,9 +52,17 @@ def private_id_validator(value):
     return hex_validator(MULTAUTH_PRIVATE_ID_LENGTH)(value)
 
 
-class YubikeyService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
+def key_generator():
+    return force_text(random_hex(MULTAUTH_PRIVATE_ID_LENGTH))
 
+
+def key_validator(value):
+    return hex_validator(MULTAUTH_PRIVATE_ID_LENGTH)(value)
+
+
+class YubikeyService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
     private_id = models.CharField(max_length=MULTAUTH_PRIVATE_ID_LENGTH * 2, validators=[private_id_validator], default=private_id_generator)
+    key = models.CharField(max_length=32, validators=[key_validator], default=key_generator)
 
     # see django_otp.plugins.otp_totp.models.TOTPService
     # key = models.CharField(max_length=80, validators=[key_validator], default=key_generator) # a hex-encoded secret key of up to 40 bytes
