@@ -5,7 +5,7 @@ from django.conf import settings
 
 from django_otp.oath import totp
 from django_otp.util import hex_validator, random_hex
-from django_otp.models import Device, SideChannelDevice
+from django_otp.models import SideChannelDevice # Device
 
 
 PASSCODE_LENGTH = getattr(settings, 'MULTAUTH_PASSCODE_LENGTH', 6) # n digits

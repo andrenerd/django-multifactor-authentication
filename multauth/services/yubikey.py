@@ -60,7 +60,7 @@ def key_validator(value):
     return hex_validator(MULTAUTH_PRIVATE_ID_LENGTH)(value)
 
 
-class YubikeyService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
+class YubikeyService(PasscodeServiceMixin, AbstractService):
     private_id = models.CharField(max_length=MULTAUTH_PRIVATE_ID_LENGTH * 2, validators=[private_id_validator], default=private_id_generator)
     key = models.CharField(max_length=32, validators=[key_validator], default=key_generator)
     session = models.PositiveIntegerField(default=0)
@@ -91,9 +91,9 @@ class YubikeyService(ThrottlingMixin, PasscodeServiceMixin, AbstractService):
     #     return False
 
     # # see django_otp.plugins.otp_totp.models.TOTPService
-    # @property
-    # def bin_key(self):
-    #     return unhexlify(self.key.encode())
+    @property
+    def bin_key(self):
+        return unhexlify(self.key.encode())
 
     # @property
     # def key_b32(self):
