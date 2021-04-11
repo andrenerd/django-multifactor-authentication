@@ -152,6 +152,9 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         if not verify_allowed:
             return False
 
+        if isinstance(token, str):
+            token = token.encode('utf-8')
+
     #     try:
     #         token = int(token)
     #     except Exception:
