@@ -147,10 +147,10 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #         print('Fake auth message, Google Yubikey, token: %s ' % (totp.token()))
 
     # # see django_otp.plugins.otp_totp.models.TOTPService
-    # def verify_token(self, token):
-    #     verify_allowed, _ = self.verify_is_allowed()
-    #     if not verify_allowed:
-    #         return False
+    def verify_token(self, token):
+        verify_allowed, _ = self.verify_is_allowed()
+        if not verify_allowed:
+            return False
 
     #     try:
     #         token = int(token)
