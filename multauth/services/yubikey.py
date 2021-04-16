@@ -146,7 +146,7 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #     if MULTAUTH_DEBUG:
     #         print('Fake auth message, Google Yubikey, token: %s ' % (totp.token()))
 
-    # # see django_otp.plugins.otp_totp.models.TOTPService
+    # see django_otp.plugins.otp_totp.models.TOTPService
     def verify_token(self, token):
         verify_allowed, _ = self.verify_is_allowed()
         if not verify_allowed:
@@ -155,23 +155,30 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         if isinstance(token, str):
             token = token.encode('utf-8')
 
-    #     try:
-    #         token = int(token)
-    #     except Exception:
-    #         verified = False
-    #     else:
-    #         totp = self.generate_totp()
-    #         verified = totp.verify(token, self.tolerance, self.last_t + 1)
- 
-    #         if verified:
-    #             self.last_t = totp.t()
-    #             if MULTAUTH_SYNC:
-    #                 self.drift = totp.drift
-    #             self.throttle_reset(commit=False)
-    #             self.save()
+        try:
+            public_id, otp = decode_otp(token, self.bin_key)
+        except Exception:
+            verified = False
+        else:
+            pass
 
-    #     if not verified:
-    #         self.throttle_increment(commit=True)
+        #     try:
+        #         token = int(token)
+        #     except Exception:
+        #         verified = False
+        #     else:
+        #         totp = self.generate_totp()
+        #         verified = totp.verify(token, self.tolerance, self.last_t + 1)
+     
+        #         if verified:
+        #             self.last_t = totp.t()
+        #             if MULTAUTH_SYNC:
+        #                 self.drift = totp.drift
+        #             self.throttle_reset(commit=False)
+        #             self.save()
+
+        #     if not verified:
+        #         self.throttle_increment(commit=True)
 
         return verified
 
