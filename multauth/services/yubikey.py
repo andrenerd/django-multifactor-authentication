@@ -173,7 +173,7 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #     if not verified:
     #         self.throttle_increment(commit=True)
 
-    #     return verified
+        return verified
 
     # # see django_otp.plugins.otp_totp.models.TOTPService
     # # see django_otp.models.ThrottlingMixin
