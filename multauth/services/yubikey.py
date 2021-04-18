@@ -87,8 +87,8 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     # def __hash__(self):
     #     return hash((self.key,))
 
-    # def is_interactive(self):
-    #     return False
+    def is_interactive(self):
+        return False
 
     # # see django_otp.plugins.otp_totp.models.TOTPService
     @property
