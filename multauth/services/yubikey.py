@@ -162,6 +162,9 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         else:
             pass
 
+        if public_id != self.public_id():
+            return False
+
         #     try:
         #         token = int(token)
         #     except Exception:
