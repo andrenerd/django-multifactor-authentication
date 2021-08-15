@@ -14,6 +14,10 @@
 # from django_otp.util import hex_validator, random_hex
 # from django_otp.oath import TOTP
 
+# from yubiotp.client import YubiClient10, YubiClient11, YubiClient20
+from yubiotp.modhex import modhex
+from yubiotp.otp import decode_otp
+
 from .abstract import AbstractService, PasscodeServiceMixin, AbstractUserMixin
 
 
@@ -112,6 +116,13 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #     url = 'otpauth://totp/{}?{}'.format(label, urlencoded_params)
     #     return url
 
+    def public_id(self):
+        """
+        The public ID of this device is the four-byte, big-endian,
+        modhex-encoded primary key.
+        """
+        return modhex(pack('>I', self.id))
+
     # def clean(self):
     #     super().clean()
 
@@ -149,9 +160,7 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         try:
             public_id, otp = decode_otp(token, self.bin_key)
         except Exception:
-            verified = False
-        else:
-            pass
+            return False
 
         if public_id != self.public_id():
             return False
@@ -174,7 +183,7 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         #     if not verified:
         #         self.throttle_increment(commit=True)
 
-        return verified
+        return True
 
     # # see django_otp.plugins.otp_totp.models.TOTPService
     # # see django_otp.models.ThrottlingMixin
