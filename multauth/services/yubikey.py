@@ -66,15 +66,6 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     session = models.PositiveIntegerField(default=0)
     counter = models.PositiveIntegerField(default=0)
 
-    # see django_otp.plugins.otp_totp.models.TOTPService
-    # key = models.CharField(max_length=80, validators=[key_validator], default=key_generator) # a hex-encoded secret key of up to 40 bytes
-    # step = models.PositiveSmallIntegerField(default=30) # the time step in seconds.
-    # t0 = models.BigIntegerField(default=0) # the Unix time at which to begin counting steps
-    # digits = models.PositiveSmallIntegerField(choices=[(6, 6), (8, 8)], default=6) # the number of digits to expect in a token
-    # tolerance = models.PositiveSmallIntegerField(default=1) # the number of time steps in the past or future to allow
-    # drift = models.SmallIntegerField(default=0) # the number of time steps the prover is known to deviate from our clock
-    # last_t = models.BigIntegerField(default=-1) # the t value of the latest verified token. The next token must be at a higher time step
-
     USER_MIXIN = 'YubikeyUserMixin'
 
     # def __eq__(self, other):

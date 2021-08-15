@@ -114,7 +114,7 @@ MULTAUTH_SERVICE_PHONE_CONFIRMED = False
 ...
 ```
 
-Non-comfirmed services will automatically be called for verification (token/key to be sent) on creation or idenfier updates. To invoke verification manually, call api endpoints:
+Non-comfirmed services will automatically be called for verification (token/key to be sent) on creation or identifier updates. To invoke verification manually, call api endpoints:
 - `multauth:signup-verification`
 
 or model methods:

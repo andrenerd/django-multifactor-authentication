@@ -31,7 +31,7 @@ setup(
         'twilio': ['twilio'],
         'vonage': ['vonage'],
         'amazon': ['boto3'],
-        'yubikey': ['YubiOTP>=0.2.2'],
+        'yubikey': ['YubiOTP>=1.0.0'],
         # reserved # 'telegram': ['telethon'],
         'authenticator': ['qrcode>=4.0'],
     },
