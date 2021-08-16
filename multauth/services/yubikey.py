@@ -1,7 +1,6 @@
 # import time
-# from base64 import b32encode
-# from binascii import unhexlify
-# from urllib.parse import quote, urlencode
+from base64 import b64decode
+from binascii import hexlify, unhexlify
 
 # from django.db import models
 # from django.utils.module_loading import import_string
@@ -163,6 +162,9 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
             return False
 
         if public_id != self.public_id():
+            return False
+
+        if hexify(otp.uid) != self.private_id.encode():
             return False
 
         #     try:
