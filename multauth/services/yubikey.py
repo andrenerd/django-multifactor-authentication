@@ -167,6 +167,9 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         if hexify(otp.uid) != self.private_id.encode():
             return False
 
+        if otp.session < self.session:
+            return False
+
         #     try:
         #         token = int(token)
         #     except Exception:
