@@ -170,23 +170,8 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
         if otp.session < self.session:
             return False
 
-        #     try:
-        #         token = int(token)
-        #     except Exception:
-        #         verified = False
-        #     else:
-        #         totp = self.generate_totp()
-        #         verified = totp.verify(token, self.tolerance, self.last_t + 1)
-     
-        #         if verified:
-        #             self.last_t = totp.t()
-        #             if MULTAUTH_SYNC:
-        #                 self.drift = totp.drift
-        #             self.throttle_reset(commit=False)
-        #             self.save()
-
-        #     if not verified:
-        #         self.throttle_increment(commit=True)
+        if (otp.session == self.session) and (otp.counter <= self.counter):
+            return False
 
         return True
 
