@@ -1,3 +1,5 @@
+# based on django-otp-yubikey
+
 # import time
 from base64 import b64decode
 from binascii import hexlify, unhexlify
@@ -172,6 +174,10 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
 
         if (otp.session == self.session) and (otp.counter <= self.counter):
             return False
+
+        self.session = otp.session
+        self.counter = otp.counter
+        self.save()
 
         return True
 
