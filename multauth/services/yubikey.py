@@ -4,7 +4,7 @@
 from base64 import b64decode
 from binascii import hexlify, unhexlify
 
-# from django.db import models
+from django.db import models
 # from django.utils.module_loading import import_string
 # from django.template.loader import get_template
 # from django.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -147,7 +147,7 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #     totp = self.generate_totp()
 
     #     if MULTAUTH_DEBUG:
-    #         print('Fake auth message, Google Yubikey, token: %s ' % (totp.token()))
+    #         print('Fake auth message, Yubikey, token: %s ' % (totp.token()))
 
     # see django_otp.plugins.otp_totp.models.TOTPService
     def verify_token(self, token):
@@ -181,10 +181,9 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
 
         return True
 
-    # # see django_otp.plugins.otp_totp.models.TOTPService
-    # # see django_otp.models.ThrottlingMixin
-    # def get_throttle_factor(self):
-    #     return MULTAUTH_THROTTLE_FACTOR
+
+class YubikeyValidationService(models.Model):
+    pass
 
 
 class YubikeyUserMixin(AbstractUserMixin):
