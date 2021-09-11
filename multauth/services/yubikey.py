@@ -118,10 +118,6 @@ class YubikeyService(PasscodeServiceMixin, AbstractService):
     #     return url
 
     def public_id(self):
-        """
-        The public ID of this device is the four-byte, big-endian,
-        modhex-encoded primary key.
-        """
         return modhex(pack('>I', self.id))
 
     # def clean(self):
