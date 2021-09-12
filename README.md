@@ -24,6 +24,8 @@ and service providers:
 - Amazon SNS
 - ...add yours
 
+and standards:
+- U2F (soon?)
 
 
 ### Usage

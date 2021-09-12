@@ -197,13 +197,13 @@ class YubikeyUserMixin(AbstractUserMixin):
 
     #     return service.check_passcode(passcode) if passcode else False
 
-    # def get_yubikey_service(self):
-    #     try:
-    #         service = YubikeyService.objects.get(user=self)
-    #     except YubikeyService.DoesNotExist:
-    #         service = None
+    def get_yubikey_service(self):
+        try:
+            service = YubikeyService.objects.get(user=self)
+        except YubikeyService.DoesNotExist:
+            service = None
 
-    #     return service
+        return service
 
     # def verify(self, request=None):
     #     super().verify(request)
