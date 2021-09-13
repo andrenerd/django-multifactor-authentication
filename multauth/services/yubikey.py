@@ -66,6 +66,9 @@ def key_validator(value):
 
 
 class YubikeyService(PasscodeServiceMixin, AbstractService):
+    """
+    see https://developers.yubico.com/OTP/Guides/Self-hosted_OTP_validation.html
+    """
     private_id = models.CharField(max_length=MULTAUTH_PRIVATE_ID_LENGTH * 2, validators=[private_id_validator], default=private_id_generator)
     key = models.CharField(max_length=32, validators=[key_validator], default=key_generator)
     session = models.PositiveIntegerField(default=0)
@@ -189,13 +192,13 @@ class YubikeyUserMixin(AbstractUserMixin):
     # def __str__(self):
     #     return str(getattr(self, 'yubikey', ''))
 
-    # def check_yubikey_passcode(self, passcode):
-    #     service = self.get_yubikey_service()
+    def check_yubikey_passcode(self, passcode):
+        service = self.get_yubikey_service()
 
-    #     if not service:
-    #         return False
+        if not service:
+            return False
 
-    #     return service.check_passcode(passcode) if passcode else False
+        return service.check_passcode(passcode) if passcode else False
 
     def get_yubikey_service(self):
         try:
